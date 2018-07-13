@@ -41,18 +41,18 @@ export default class Register extends React.Component {
         <Text style={mainStyles.textAlert}>{this.state.message}</Text>
         <Text style={mainStyles.textBig}>Register</Text>
         <TextInput
-          style={{height: 40}}
+          style={mainStyles.textInput}
           placeholder="Enter your username"
           onChangeText={(text) => this.setState({username: text})}
         />
         <TextInput
-          style={{height: 40}}
+          style={mainStyles.textInput}
           secureTextEntry={true}
           placeholder="Enter your password"
           onChangeText={(text) => this.setState({password: text})}
         />
         <TextInput
-          style={{height: 40}}
+          style={mainStyles.textInput}
           placeholder="Enter your phone"
           onChangeText={(text) => this.setState({phone: text})}
         />

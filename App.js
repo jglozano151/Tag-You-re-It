@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { StackNavigator } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation';
 import mainStyles from './styles.js'
 import Login from './components/Login'
 import Register from './components/Register'
@@ -19,7 +19,7 @@ import CurrentGame from './components/CurrentGame'
 
 
 //Navigator
-export default StackNavigator({
+export default createStackNavigator({
   Login: {
     screen: Login,
   },
@@ -56,4 +56,4 @@ export default StackNavigator({
   CurrentGame: {
     screen: CurrentGame,
   }
-}, {initialRouteName: 'Home'});
+}, {initialRouteName: 'Login'});

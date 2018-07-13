@@ -41,12 +41,12 @@ export default class Login extends React.Component {
         <Text style={mainStyles.textAlert}>{this.state.message}</Text>
         <Text style={mainStyles.textBig}>Welcome to Tag!</Text>
         <TextInput
-          style={{height: 40}}
+          style={mainStyles.textInput}
           placeholder="Enter your username"
           onChangeText={(text) => this.setState({username: text})}
         />
         <TextInput
-          style={{height: 40}}
+          style={mainStyles.textInput}
           secureTextEntry={true}
           placeholder="Enter your password"
           onChangeText={(text) => this.setState({password: text})}
