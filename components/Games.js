@@ -7,6 +7,7 @@ import {
   ListView
 } from 'react-native';
 import mainStyles from '../styles.js'
+// import Penzzz
 
 
 export default class Home extends React.Component {
@@ -23,12 +24,10 @@ export default class Home extends React.Component {
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tagactive", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'active'},
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
               {title: "Tom's Game of Tagactive", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'active'},
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tagactive", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'active'},
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
               {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
               {title: "Tom's Game of Tagcomplete", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}]
@@ -57,18 +56,44 @@ export default class Home extends React.Component {
     })
   }
 
+  pending(id){
+    this.props.navigation.navigate('Pending', {id: id})
+  }
+
+  active(id){
+    this.props.navigation.navigate('CurrentGame', {id: id})
+  }
+
+  launchGame(id){
+    alert('You are going to launch ' + id + '. Get ready to run')
+  }
+
   render() {
     return (
       <View style={{flex: 1, backgroundColor: '#fff'}}>
           <Text style={mainStyles.textBig}>My Games</Text>
-          <View style = {{flex: 1, borderColor: 'black', borderTopWidth:1, borderBottomWidth: 1}}>
+          <View style = {{borderColor: 'black', borderTopWidth:1, borderBottomWidth: 1}}>
             <Text style={mainStyles.textMed}>Active</Text>
             <ListView
               dataSource={this.state.active}
               renderRow={(rowData) => {
                 console.log(rowData);
-                return <View style = {styles.game}>
-                  <Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}</Text>
+                return <View style = {styles.active}>
+                  <TouchableOpacity onPress = {()=>{this.active(rowData._id)}}><Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.
+                  {rowData.participants.joined} players</Text></TouchableOpacity>
+                </View>}}
+            />
+          </View>
+          <View style = {{borderColor: 'black', borderTopWidth:1, borderBottomWidth: 1}}>
+            <Text style={mainStyles.textMed}>Pending</Text>
+            <ListView
+              dataSource={this.state.pending}
+              renderRow={(rowData) => {
+                console.log(rowData);
+                return <View style = {[styles.pending,{alignItems: 'center'}]}>
+                  <TouchableOpacity onPress = {()=>{this.pending(rowData._id)}}>
+                    <Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.  {rowData.participants.joined} / {rowData.participants.joined + rowData.participants.invited} players</Text>
+                  </TouchableOpacity>
                 </View>}}
             />
           </View>
@@ -80,9 +105,14 @@ export default class Home extends React.Component {
 
 
 const styles = StyleSheet.create({
-  game: {
-    backgroundColor:'black',
+  active: {
+    backgroundColor:'#4286f4',
     borderWidth: 2,
-    borderColor: '#4286f4'
+    borderColor: 'black'
+  },
+  pending: {
+    backgroundColor:'#b1bed8',
+    borderWidth: 2,
+    borderColor: 'black'
   }
 });

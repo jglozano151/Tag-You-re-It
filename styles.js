@@ -60,12 +60,12 @@ const mainStyles = StyleSheet.create({
   },
   textSmall: {
     fontFamily: 'Baskerville',
-    fontSize: 12,
+    fontSize: 16,
     textAlign: 'center',
     margin: 10,
   },
   textInput: {
-    height: 40, 
+    height: 40,
     alignSelf: 'stretch',
     textAlign: 'center',
     paddingLeft: 20,
