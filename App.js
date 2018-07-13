@@ -15,7 +15,7 @@ import AboutGame from './components/NewGame/AboutGame'
 import InvitePlayers from './components/NewGame/InvitePlayers'
 import CurrentGame from './components/CurrentGame'
 
- 
+
 
 
 //Navigator
