@@ -35,6 +35,7 @@ const mainStyles = StyleSheet.create({
   },
   buttonLabel: {
     textAlign: 'center',
+    fontFamily: 'Baskerville',
     fontSize: 16,
     color: 'white'
   },
@@ -63,6 +64,14 @@ const mainStyles = StyleSheet.create({
     textAlign: 'center',
     margin: 10,
   },
+  textInput: {
+    height: 40, 
+    alignSelf: 'stretch',
+    textAlign: 'center',
+    paddingLeft: 20,
+    paddingRight: 20
+  }
+
 });
 
 export default mainStyles
