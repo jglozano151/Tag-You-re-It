@@ -10,7 +10,7 @@ import mainStyles from '../styles.js'
 
 export default class Home extends React.Component {
   static navigationOptions = {
-    title: 'Friends'
+    title: 'Games'
   };
 
 

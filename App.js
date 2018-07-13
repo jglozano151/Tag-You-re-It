@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { StackNavigator } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation';
 import mainStyles from './styles.js'
 import Login from './components/Login'
 import Register from './components/Register'
@@ -15,11 +15,11 @@ import AboutGame from './components/NewGame/AboutGame'
 import InvitePlayers from './components/NewGame/InvitePlayers'
 import CurrentGame from './components/CurrentGame'
 
- 
+
 
 
 //Navigator
-export default StackNavigator({
+export default createStackNavigator({
   Login: {
     screen: Login,
   },
