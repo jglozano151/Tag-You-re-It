@@ -7,7 +7,7 @@ import {
   ListView
 } from 'react-native';
 import mainStyles from '../styles.js'
-
+import InviteFriend from './InviteFriend'
 
 
 export default class Friends extends React.Component {
@@ -17,8 +17,8 @@ export default class Friends extends React.Component {
     this.state = ({
       dataSource: ds.cloneWithRows([{username:'Tom'}, {username:'Tom'}, {username:'Tom'}, {username:'Tom'}, {username:'Tom'},
       {username:'Tom'},{username:'Tom'}, {username:'Tom'}, {username:'Tom'},{username:'Tom'},{username:'Tom'}, {username:'Tom'}, {username:'Tom'}]),
-      ds: ds,
-      refreshing: false
+      requests: ds.cloneWithRows([{username:'Tim', _id: 1}, {username:'Tim', _id: 1}, {username:'Tim', _id: 1}]),
+      requestsPresent: true
     })
   }
   static navigationOptions = {
@@ -29,11 +29,36 @@ export default class Friends extends React.Component {
 
   }
 
+  addFriend(){
+    this.props.navigation.navigate('InviteFriend');
+  }
+
+  accept(id){
+    alert("You've Accepted" + id)
+  }
+
+  deny(id){
+    alert("You've Denied" + id)
+  }
+
   render() {
     return (
       <View style={{flex: 1, backgroundColor: '#fff'}}>
-        <View style = {{flex: 7}}>
-          <Text style={mainStyles.textBig}>My Friends</Text>
+        <Text style={mainStyles.textBig}>My Friends</Text>
+        {(this.state.requestsPresent)?
+        <View style = {{flex: 2}}>
+          <Text style={mainStyles.textMed}>Friends Requests</Text>
+          <ListView
+            dataSource={this.state.requests}
+            renderRow={(rowData) => <View style = {[styles.friend, {flex: 1, flexDirection: 'row'}]}>
+              <Text style = {[mainStyles.textMed, {alignSelf: 'flex-start', flex: 3}]}>{rowData.username}</Text>
+              <TouchableOpacity style = {[mainStyles.button, mainStyles.lightGrey, {flex: 1, marginBottom: 15}]} onPress={()=>this.accept(rowData._id)}><Text>Accept</Text></TouchableOpacity>
+              <TouchableOpacity style = {[mainStyles.button, mainStyles.lightGrey, {flex: 1, marginBottom: 15}]} onPress={()=>this.deny(rowData._id)}><Text>Deny</Text></TouchableOpacity>
+            </View>}
+          />
+        </View>:<View></View>}
+        <View style = {{flex: 6}}>
+          <Text style={mainStyles.textMed}>Current Friends</Text>
           <ListView
             dataSource={this.state.dataSource}
             renderRow={(rowData) => <View style = {styles.friend}>
@@ -42,7 +67,7 @@ export default class Friends extends React.Component {
           />
         </View>
       <View style = {{flex: 1, borderColor: 'black', borderTopWidth:1}}>
-        <TouchableOpacity><Text style = {[mainStyles.button, mainStyles.darkGrey, mainStyles.textMed]}> Add Friend </Text></TouchableOpacity>
+        <TouchableOpacity onPress={()=>this.addFriend()}><Text style = {[mainStyles.button, mainStyles.darkGrey, mainStyles.textMed]}> Add Friend </Text></TouchableOpacity>
       </View>
     </View>
     );
