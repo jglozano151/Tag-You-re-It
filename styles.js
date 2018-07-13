@@ -18,7 +18,8 @@ const mainStyles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 5,
     marginRight: 5,
-    borderRadius: 5
+    borderRadius: 5,
+    alignSelf: 'stretch'
   },
   blue: {
     backgroundColor: '#4286f4'
@@ -48,6 +49,13 @@ const mainStyles = StyleSheet.create({
     fontSize: 24,
     textAlign: 'center',
     margin: 10,
+  },
+  textAlert: {
+    fontFamily: 'Baskerville',
+    fontSize: 24,
+    textAlign: 'center',
+    margin: 10,
+    color: 'orange'
   },
   textSmall: {
     fontFamily: 'Baskerville',
