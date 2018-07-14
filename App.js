@@ -13,7 +13,7 @@ import AboutGame from './components/NewGame/AboutGame'
 import InvitePlayers from './components/NewGame/InvitePlayers'
 import CurrentGame from './components/CurrentGame'
 
-global.NGROK='https://18028512.ngrok.io';
+global.NGROK='http://c2d3a5d3.ngrok.io';
 
 //Navigator
 export default createStackNavigator({
@@ -47,4 +47,4 @@ export default createStackNavigator({
   CurrentGame: {
     screen: CurrentGame,
   }
-}, {initialRouteName: 'Home'});
+}, {initialRouteName: 'CurrentGame'});
