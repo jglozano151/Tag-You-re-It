@@ -9,8 +9,6 @@ import Pending from './components/Pending'
 import InviteFriend from './components/InviteFriend'
 import Friends from './components/Friends'
 import Games from './components/Games'
-import AddFriend from './components/Notifications/AddFriend'
-import JoinGame from './components/Notifications/JoinGame'
 import AboutGame from './components/NewGame/AboutGame'
 import InvitePlayers from './components/NewGame/InvitePlayers'
 import CurrentGame from './components/CurrentGame'
@@ -41,12 +39,6 @@ export default createStackNavigator({
   Games: {
     screen: Games,
   },
-  AddFriend: {
-    screen: AddFriend,
-  },
-  JoinGame: {
-    screen: JoinGame,
-  },
   AboutGame: {
     screen: AboutGame,
   },
@@ -56,4 +48,4 @@ export default createStackNavigator({
   CurrentGame: {
     screen: CurrentGame,
   }
-}, {initialRouteName: 'Login'});
+}, {initialRouteName: 'Home'});

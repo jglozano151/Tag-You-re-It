@@ -68,6 +68,15 @@ export default class Home extends React.Component {
     alert('You are going to launch ' + id + '. Get ready to run')
   }
 
+
+  accept(id){
+    alert("You've Accepted" + id)
+  }
+
+  deny(id){
+    alert("You've Denied" + id)
+  }
+
   render() {
     return (
       <View style={{flex: 1, backgroundColor: '#fff'}}>
@@ -93,6 +102,21 @@ export default class Home extends React.Component {
                 return <View style = {[styles.pending,{alignItems: 'center'}]}>
                   <TouchableOpacity onPress = {()=>{this.pending(rowData._id)}}>
                     <Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.  {rowData.participants.joined} / {rowData.participants.joined + rowData.participants.invited} players</Text>
+                  </TouchableOpacity>
+                </View>}}
+            />
+          </View>
+          <View style = {{borderColor: 'black', borderTopWidth:1, borderBottomWidth: 1}}>
+            <Text style={mainStyles.textMed}>Requests</Text>
+            <ListView
+              dataSource={this.state.pending}
+              renderRow={(rowData) => {
+                console.log(rowData);
+                return <View style = {[styles.pending,{alignItems: 'center'}]}>
+                  <TouchableOpacity onPress = {()=>{this.pending(rowData._id)}}>
+                    <Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}. Would you like to join?</Text>
+                    <TouchableOpacity style = {[mainStyles.button, mainStyles.lightGrey, {flex: 1, marginBottom: 15}]} onPress={()=>this.accept(rowData._id)}><Text>Accept</Text></TouchableOpacity>
+                    <TouchableOpacity style = {[mainStyles.button, mainStyles.lightGrey, {flex: 1, marginBottom: 15}]} onPress={()=>this.deny(rowData._id)}><Text>Deny</Text></TouchableOpacity>
                   </TouchableOpacity>
                 </View>}}
             />
