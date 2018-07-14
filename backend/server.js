@@ -56,7 +56,7 @@ app.post('/login', function(req, res) {
         res.json({status: 200, message: 'Login success!', user: user})
       }
     })
-    .catch((err) => res.json({status: 400 'Error: invalid login!'}))
+    .catch((err) => res.json({status: 400, message: 'Error: invalid login!'}))
 })
 
 // Returns active and pending game ids for the user as separate arrays
@@ -86,14 +86,20 @@ app.get('/games/:game?user', function(req, res) {
 // Send arrays of the user's friends and friend requests back
 app.get('/friends/:user', function(req, res) {
   User.findById(req.params.user)
-    .then((user) => res.send({friends: user.friends, requests: user.requests}))
-})
-
-// Returns the user object (for loading friends, profile page etc)
-app.get('/users/:user', function(req, res) {
-  User.findById(req.params.user, function(err, user) {
-    res.send(user)
-  })
+    .then((user) => {
+      let friends = user.friends
+      let requests = user.requests
+      var friendObjects = []
+      var requestObjects = []
+      Promise.all(
+        friends.map((friend) => {
+          return User.findOne({username: friend})
+        })
+      )
+        .then((friends) => res.send({status: 200, friends: friends}))
+        .catch((err) => res.send({status: 400, message: err}))
+    })
+    .catch((err) => res.send({status: 400, message: err}))
 })
 
 // Add friend, pass in the body the username of the friend you want to send the request to
@@ -143,21 +149,28 @@ app.post('/games/creategame/:user', function(req, res) {
     title: req.body.title,
     participants: {
       joined: [req.params.user],
-      invited: []
-    },
-    createdAt: new Date(),
+      invited: [],
+      createdAt: new Date(),
+  },
     owner: req.params.user,
     gameStatus: 'Pending'
   })
   var userId = req.params.user
   newGame.save((err, game) => {
+    let newTagGame = game
     User.findById(userId, function(err, user) {
+      if (err) {
+        res.send({status: 500, message: err})
+      }
       var pendingGames = user.games.pending;
       var activeGames = user.games.active;
       let id = game.id
       pendingGames.push(id)
-      User.findByIdAndUpdate(userId, {games: {active: activeGames, pending: pendingGames}})
-        .then(res.send('success'))
+      User.findByIdAndUpdate(userId, {games: {
+        active: activeGames, pending: pendingGames, invitedTo: user.games.invitedTo, ended: user.games.ended
+      }})
+        .then(res.send({status: 200, message: 'Game created!', game: newTagGame}))
+        .catch((err) => res.send({status: 400, message: err}))
     })
   })
 })
@@ -169,14 +182,18 @@ app.get('/games/initialize/:game', function(req, res) {
       let participants = game.participants.joined;
       let newIt = participants[Math.floor(Math.random()*participants.length)]
       Game.findByIdAndUpdate(req.params.game, {gameStatus: 'active', it: [newIt]})
-        .then(res.send('Game started!'))
+        .then(res.json({status: 200, message: 'Game started!'}))
+        .catch((err) => res.json({status: 400, message: err}))
     })
+    .catch((err) => res.json({status: 400, message: err}))
 })
 
 // Turns the user's game status from pending to active. Takes 'game' query that
 // refers to the game that is being initialized
-app.get('/games/initializeuser/:user', function(req, res) {
-  User.findById(req.params.user)
+app.post('/games/initializeusers', function(req, res) {
+  // fix this to run for all users in the game
+  let users = req.body.players
+  User.findById(user)
     .then((user) => {
       let activeGames = user.games.active;
       let pendingGames = user.games.pending;
@@ -190,17 +207,22 @@ app.get('/games/initializeuser/:user', function(req, res) {
           ended: user.games.ended
         }
       })
-        .then(res.send('Players are ready...'))
+        .then(res.json({status: 200, message: 'Players ready'}))
+        .catch((err) => res.json({status: 400, message: err}))
     })
 })
 
 // Adds the game to selected player's invited to field. Requires a 'user' query
 // that is the user's ID
-app.post('/games/inviteplayer/:game', function(req, res) {
-  User.findById(req.query.user)
+
+
+app.post('/games/inviteplayers', function(req, res) {
+  let players = req.body.players
+  // Fix this like above!
+  User.findById(req.body.user)
     .then((user) => {
       let invitedGames = user.games.invitedTo;
-      invitedGames.push(req.params.game)
+      invitedGames.push(req.body.game)
       User.findByIdAndUpdate(user._id, {games:
         {
           active: user.games.active,
@@ -209,21 +231,35 @@ app.post('/games/inviteplayer/:game', function(req, res) {
           ended: user.games.ended
         }
       }, function(err, user) {
-        Game.findById(req.params.game, function(err, game) {
+        Game.findById(req.body.game, function(err, game) {
           invitedPlayers = game.participants.invited;
           joinedPlayers = game.participants.joined;
-          invitedPlayers.push(req.query.user)
-          Game.findByIdAndUpdate(req.params.game, {participants: {joined: joinedPlayers, invited: invitedPlayers}})
-            .then(res.json('Invited to game!'))
+          invitedPlayers.push(req.body.user)
+          Game.findByIdAndUpdate(req.body.game, {participants: {joined: joinedPlayers, invited: invitedPlayers}})
+            .then(res.json({status: 200, message: 'Invited to game'}))
+            .catch((err) => res.json({status: 400, message: err}))
         })
       })
     })
 })
 
+app.get('/games/:game', function(req, res) {
+  Game.findById(req.params.game)
+    .then((game) => {
+      User.findById(game.owner.id, function(err, user) {
+        if (err) {
+          res.send({status: 400, message: err})
+        }
+        res.send({status: 200, message: 'Found', game: game, owner: user})
+      })
+    })
+    .catch((err) => res.send({status: 400, message: err}))
+})
+
 // Moves the game from 'invited to' into 'pending' for the user who accepted it
 // requires a 'user' query that is the user's ID as well
 app.post('/games/acceptgame/:game', function(req, res) {
-  User.findById(req.query.user)
+  User.findById(req.body.user)
     .then((user) => {
       let invitedGames = user.games.invitedTo;
       let pendingGames = user.games.pending;
@@ -245,7 +281,7 @@ app.post('/games/acceptgame/:game', function(req, res) {
           invitedPlayers = game.participants.invited;
           joinedPlayers = game.participants.joined;
           invitedPlayers.splice(invitedPlayers.indexOf(user._id), 1)
-          joinedPlayers.push(req.query.user)
+          joinedPlayers.push(req.body.user)
           Game.findByIdAndUpdate(req.params.game, {participants: {joined: joinedPlayers, invited: invitedPlayers}})
             .then(res.json('Accepted game!'))
         })
