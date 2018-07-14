@@ -16,21 +16,12 @@ export default class Home extends React.Component {
     // title, participants, createdAt, owner, gameStatus-pending,  active, complete
     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
     this.state = ({
+      requestsPresent: true,
       pending: ds.cloneWithRows([]),
       active: ds.cloneWithRows([]),
       complete: ds.cloneWithRows([]),
-      ds: ds,
-      data: [{title: "Tom's Game of Tagcomplete", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tagactive", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'active'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-              {title: "Tom's Game of Tagcomplete", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}]
+      requests: ds.cloneWithRows([]),
+      ds: ds
     })
   }
   static navigationOptions = {
@@ -38,21 +29,19 @@ export default class Home extends React.Component {
   };
 
   componentDidMount(){
-    let data = this.state.data.slice()
-    let pending = [];
-    let active = [];
-    let complete = [];
-
-    for (let i = 0; i < data.length; i ++){
-      if (data[i].gameStatus === 'pending') pending.push(data[i]);
-      else if (data[i].gameStatus === 'active') active.push(data[i])
-      else complete.push(data[i])
-    }
+    let pending = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
+    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
+    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
+    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
+    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},];
+    let active = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'active'}];
+    let complete = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}, {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}];
+    let requests = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'requests', _id: 1}, {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'requests', _id: 2}];
     this.setState({
       pending: this.state.ds.cloneWithRows(pending),
       active: this.state.ds.cloneWithRows(active),
       complete: this.state.ds.cloneWithRows(complete),
-      data: []
+      requests: this.state.ds.cloneWithRows(requests)
     })
   }
 
@@ -86,37 +75,33 @@ export default class Home extends React.Component {
             <ListView
               dataSource={this.state.active}
               renderRow={(rowData) => {
-                console.log(rowData);
                 return <View style = {styles.active}>
                   <TouchableOpacity onPress = {()=>{this.active(rowData._id)}}><Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.
                   {rowData.participants.joined} players</Text></TouchableOpacity>
                 </View>}}
             />
           </View>
+          {(this.state.requestsPresent)?
+          <View style = {{borderColor: 'black', borderTopWidth:1, borderBottomWidth: 1}}>
+            <Text style={mainStyles.textMed}>Requests</Text>
+            <ListView
+              dataSource={this.state.requests}
+              renderRow={(rowData) => {
+                return <View style = {[styles.pending,{flex: 1, alignItems: 'center',  flexDirection: 'row'}]}>
+                    <Text style = {[mainStyles.textSmall, {alignSelf: 'flex-start', flex: 3}]}>{rowData.title} created {rowData.createdAt} by {rowData.owner}. Would you like to join?</Text>
+                    <TouchableOpacity style = {[mainStyles.button, mainStyles.darkGrey, {alignSelf: 'flex-start', flex: 1, marginBottom: 15}]} onPress={()=>this.accept(rowData._id)}><Text>Accept</Text></TouchableOpacity>
+                    <TouchableOpacity style = {[mainStyles.button, mainStyles.darkGrey, {alignSelf: 'flex-start', flex: 1, marginBottom: 15}]} onPress={()=>this.deny(rowData._id)}><Text>Deny</Text></TouchableOpacity>
+                </View>}}
+            />
+          </View>: <View></View>}
           <View style = {{borderColor: 'black', borderTopWidth:1, borderBottomWidth: 1}}>
             <Text style={mainStyles.textMed}>Pending</Text>
             <ListView
               dataSource={this.state.pending}
               renderRow={(rowData) => {
-                console.log(rowData);
                 return <View style = {[styles.pending,{alignItems: 'center'}]}>
                   <TouchableOpacity onPress = {()=>{this.pending(rowData._id)}}>
                     <Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.  {rowData.participants.joined} / {rowData.participants.joined + rowData.participants.invited} players</Text>
-                  </TouchableOpacity>
-                </View>}}
-            />
-          </View>
-          <View style = {{borderColor: 'black', borderTopWidth:1, borderBottomWidth: 1}}>
-            <Text style={mainStyles.textMed}>Requests</Text>
-            <ListView
-              dataSource={this.state.pending}
-              renderRow={(rowData) => {
-                console.log(rowData);
-                return <View style = {[styles.pending,{alignItems: 'center'}]}>
-                  <TouchableOpacity onPress = {()=>{this.pending(rowData._id)}}>
-                    <Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}. Would you like to join?</Text>
-                    <TouchableOpacity style = {[mainStyles.button, mainStyles.lightGrey, {flex: 1, marginBottom: 15}]} onPress={()=>this.accept(rowData._id)}><Text>Accept</Text></TouchableOpacity>
-                    <TouchableOpacity style = {[mainStyles.button, mainStyles.lightGrey, {flex: 1, marginBottom: 15}]} onPress={()=>this.deny(rowData._id)}><Text>Deny</Text></TouchableOpacity>
                   </TouchableOpacity>
                 </View>}}
             />
