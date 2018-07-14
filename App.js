@@ -13,6 +13,8 @@ import AboutGame from './components/NewGame/AboutGame'
 import InvitePlayers from './components/NewGame/InvitePlayers'
 import CurrentGame from './components/CurrentGame'
 
+global.NGROK='https://18028512.ngrok.io';
+
 //Navigator
 export default createStackNavigator({
   Login: {
