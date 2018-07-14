@@ -22,7 +22,8 @@ export default class CurrentGame extends React.Component {
       its: [],
       players: [],
       tagged: false,
-      currentGame: {}
+      currentGame: {},
+      userId:''
     })
   }
   static navigationOptions = {
@@ -33,28 +34,30 @@ export default class CurrentGame extends React.Component {
 
   componentDidMount(){
     this.here();
-    this.updateLocation();
-    this.watchId = setInterval(()=>this.updateLocation(), 3000)
     AsyncStorage.getItem('token')
     .then((data) => {
       token = JSON.parse(data);
+
       let userId = token.userId
       this.setState({
         userId: userId
       })
+      this.updateLocation()
+      setInterval(()=>this.updateLocation(), 3000)
     })
     .catch(err=> {console.log('ERROR', err)})
   }
 
-  componentWillUnmount() {
-    clearInterval(this.watchId);
-  }
 
   updateLocation(){
     navigator.geolocation.getCurrentPosition(
       (success)=>{
-        fetch(global.NGROK + '/livegame/' + navigation.getParam('id'), {
+
+        fetch(global.NGROK + '/livegame/' + this.props.navigation.getParam('id'), {
           method: 'post',
+          headers :{
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({
             latitude: success.coords.latitude,
             longitude: success.coords.longitude,
@@ -70,8 +73,8 @@ export default class CurrentGame extends React.Component {
             return;
           })
           this.setState({
-            its:results.itPlayers,
-            players: results.notItPlayers,
+            its:result.itPlayers,
+            players: result.notItPlayers,
             tagged: tagged,
             userLoc: {
               lat:success.coords.latitude,
@@ -107,6 +110,8 @@ export default class CurrentGame extends React.Component {
 
 
   render() {
+    console.log("ITS", this.state.its);
+    console.log("NOT", this.state.players);
     return (
       <View style={{flex: 1}}>
         <MapView
@@ -129,20 +134,20 @@ export default class CurrentGame extends React.Component {
             pinColor ={'#4286f4'}
             />
             {this.state.its.map((it)=> <MapView.Marker
-              key = {it.user}
+              key = {it._id}
               coordinate={{
-                latitude: it.lat,
-                longitude: it.long
+                latitude: it.location.latitude,
+                longitude: it.location.longitude
               }}
-              title={it.user}
+              title={it.username}
               />)}
               {this.state.players.map((player)=> <MapView.Marker
-                key = {player.user}
+                key = {player._id}
                 coordinate={{
-                  latitude: player.lat,
-                  longitude: player.long
+                  latitude: player.location.latitude,
+                  longitude: player.location.longitude
                 }}
-                title={player.user}
+                title={player.username}
                 pinColor ={'black'}
 
                 />)}
@@ -150,9 +155,10 @@ export default class CurrentGame extends React.Component {
           <View style={{flex: 1, flexDirection: 'row'}}>
               {(this.state.tagged)?
                 <Text style = {[{flex: 3}, mainStyles.button, mainStyles.blue, mainStyles.buttonLabel, mainStyles.textMed]}>
-                Go Get {this.state.players[0].user}!</Text>:
+                Go Find Someone
+              </Text>:
                 <Text style = {[{flex: 3}, mainStyles.button, mainStyles.blue, mainStyles.buttonLabel, mainStyles.textMed]}>
-                Watch Out For {this.state.its[0].user}!
+                Be Careful
               </Text>}
             <TouchableOpacity
               onPress={()=>{this.here()}}

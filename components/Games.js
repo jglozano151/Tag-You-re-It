@@ -13,7 +13,7 @@ import mainStyles from '../styles.js'
 export default class Home extends React.Component {
   constructor(){
     super()
-    let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
+    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
     this.state = ({
       requestsPresent: true,
       pending: ds.cloneWithRows([]),
@@ -36,7 +36,6 @@ export default class Home extends React.Component {
    })
    .then(()=>{fetch(global.NGROK + '/userGames/' + this.state.userId)
              .then(resp=>{
-               console.log(resp);
                return resp.json()})
              .then(result => {
                let pending = result.pending;
@@ -49,17 +48,15 @@ export default class Home extends React.Component {
                Promise.all(complete.map(comp => (fetch(global.NGROK + '/games/'+ comp).then(resp => (resp.json()))))),
                Promise.all(requests.map(req => (fetch(global.NGROK + '/games/'+ req).then(resp => (resp.json())))))])
                .then(final => {
- console.log("Final", final[3]);
                 let requestsPresent = true;
                 if (final[3].length === 0){
                   requestsPresent = false
-                  console.log("Phone", requestsPresent);
                 }
                  this.setState({
-                 pending: this.state.ds(final[0]),
-                 active: this.state.ds(final[1]),
-                 complete: this.state.ds(final[2]),
-                 requests: this.state.ds(final[3]),
+                 pending: this.state.ds.cloneWithRows(final[0]),
+                 active: this.state.ds.cloneWithRows(final[1]),
+                 complete: this.state.ds.cloneWithRows(final[2]),
+                 requests: this.state.ds.cloneWithRows(final[3]),
                  requestsPresent: requestsPresent
                })})
              })})
@@ -92,8 +89,8 @@ export default class Home extends React.Component {
               dataSource={this.state.active}
               renderRow={(rowData) => {
                 return <View style = {styles.active}>
-                  <TouchableOpacity onPress = {()=>{this.active(rowData._id)}}><Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.
-                  {rowData.participants.joined} players</Text></TouchableOpacity>
+                  <TouchableOpacity onPress = {()=>{this.active(rowData.game._id)}}><Text style = {mainStyles.textSmall}>{rowData.game.title} by {rowData.game.owner}.
+                  </Text></TouchableOpacity>
                 </View>}}
             />
           </View>
@@ -104,7 +101,7 @@ export default class Home extends React.Component {
               dataSource={this.state.requests}
               renderRow={(rowData) => {
                 return <View style = {[styles.pending,{flex: 1, alignItems: 'center',  flexDirection: 'row'}]}>
-                    <Text style = {[mainStyles.textSmall, {alignSelf: 'flex-start', flex: 3}]}>{rowData.title} created {rowData.createdAt} by {rowData.owner}. Would you like to join?</Text>
+                    <Text style = {[mainStyles.textSmall, {alignSelf: 'flex-start', flex: 3}]}>{rowData.game.title} by {rowData.game.owner}. Would you like to join?</Text>
                     <TouchableOpacity style = {[mainStyles.button, mainStyles.darkGrey, {alignSelf: 'flex-start', flex: 1, marginBottom: 15}]} onPress={()=>this.accept(rowData._id)}><Text>Accept</Text></TouchableOpacity>
                     <TouchableOpacity style = {[mainStyles.button, mainStyles.darkGrey, {alignSelf: 'flex-start', flex: 1, marginBottom: 15}]} onPress={()=>this.deny(rowData._id)}><Text>Deny</Text></TouchableOpacity>
                 </View>}}
@@ -117,7 +114,7 @@ export default class Home extends React.Component {
               renderRow={(rowData) => {
                 return <View style = {[styles.pending,{alignItems: 'center'}]}>
                   <TouchableOpacity onPress = {()=>{this.pending(rowData._id)}}>
-                    <Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.  {rowData.participants.joined} / {rowData.participants.joined + rowData.participants.invited} players</Text>
+                    <Text style = {mainStyles.textSmall}>{rowData.game.title} by {rowData.game.owner}  </Text>
                   </TouchableOpacity>
                 </View>}}
             />

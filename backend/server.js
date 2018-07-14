@@ -66,7 +66,6 @@ app.post('/login', function(req, res) {
 // Returns active and pending game ids for the user as separate arrays
 app.get('/userGames/:user', function(req, res) {
   User.findById(req.params.user, function(err, user) {
-    console.log('Test', user);
     res.send({
       active: user.games.active,
       pending: user.games.pending,
@@ -330,20 +329,24 @@ app.post('/games/endgame/:game', function(req, res) {
 })
 
 function distance(lat1, lon1, lat2, lon2, unit) {
+
 	var radlat1 = Math.PI * lat1/180
 	var radlat2 = Math.PI * lat2/180
 	var theta = lon1-lon2
 	var radtheta = Math.PI * theta/180
 	var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+
 	if (dist > 1) {
 		dist = 1;
 	}
 	dist = Math.acos(dist)
 	dist = dist * 180/Math.PI
 	dist = dist * 60 * 1.1515
+
 	if (unit=="K") { dist = dist * 1.609344 }
 	if (unit=="N") { dist = dist * 0.8684 }
   if (unit=="Meter") { dist = dist * 1609.34}
+
 	return dist
 }
 
@@ -354,7 +357,8 @@ app.post('/livegame/:game', function(req, res){
       longitude: req.body.longitude
     }
   })
-    .then(Game.findById(req.params.game))
+    .then((user)=>{
+      return Game.findById(req.params.game)})
     .then((game) => {
       let playerIds = game.participants.joined
       let itIds = game.it
@@ -374,14 +378,19 @@ app.post('/livegame/:game', function(req, res){
               notItPlayers.push(player)
             }
           })
+
+
+
           for (let i = 0; i < itPlayers.length; i++){
+
             for (let j = 0; j < notItPlayers.length; j++){
-              if (distance(itPlayers[i].position.latitude, itPlayers[i].position.longitude, notItPlayers[j].position.latitude, notItPlayers[j].position.longitude, 'Meter') < 5){
+              if (distance(itPlayers[i].location.latitude, itPlayers[i].location.longitude, notItPlayers[j].location.latitude, notItPlayers[j].location.longitude, 'Meter') < 5){
                 itIds.push(notItPlayers[j].id)
                 itPlayers.push(notItPlayers[j])
               }
             }
           }
+
           notItPlayers.forEach(function(element){
             let match = false
             for (let i = 0; i < itPlayers.length; i++){
