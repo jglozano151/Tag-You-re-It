@@ -56,4 +56,4 @@ export default createStackNavigator({
   CurrentGame: {
     screen: CurrentGame,
   }
-}, {initialRouteName: 'Login'});
+}, {initialRouteName: 'Pending'});

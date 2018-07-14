@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, AsyncStorage } from 'react-native';
 import mainStyles from '../styles.js'
 import Register from './Register'
 import Home from './Home'
@@ -23,6 +23,11 @@ export default class Login extends React.Component {
     if (this.state.username && this.state.password) {
       // TODO: fetch
       console.log('loggedin,', this.state.username, this.state.password);
+
+      AsyncStorage.setItem('token', JSON.stringify({
+        userId: '1' // will be set to return value of fetch
+      }));
+
       this.props.navigation.navigate('Home');
     } else {
       this.setState({message: 'Server error. Retry'})
@@ -35,7 +40,6 @@ export default class Login extends React.Component {
   }
 
   render() {
-    // TODO: issue displaying input
     return (
       <View style={mainStyles.container}>
         <Text style={mainStyles.textAlert}>{this.state.message}</Text>

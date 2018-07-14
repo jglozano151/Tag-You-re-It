@@ -33,6 +33,10 @@ export default class InvitePlayers extends React.Component {
     }
   }
 
+  componentDidMount () {
+    // TODO: fetch GET friends
+  }
+
   press(item) {
     let index = this.state.selected.indexOf(item.id);
     console.log("item", item);
@@ -73,6 +77,15 @@ export default class InvitePlayers extends React.Component {
 
   submit () {
     console.log("invite selected Array:", this.state.selected);
+    // must invite at least 2 people
+    if (this.state.selected.length >= 2) {
+      // TODO: fetch POST
+      this.props.navigation.navigate('Pending');
+    } else {
+      this.setState({
+        message: 'Must invite at least 2 friends'
+      })
+    }
   }
 
   render() {
