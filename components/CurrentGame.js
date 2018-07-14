@@ -14,6 +14,12 @@ export default class CurrentGame extends React.Component {
       long: 0,
       latDelta: 150,
       longDelta: 150,
+      userLoc: {
+        lat:0,
+        long:0,
+        latDelta:.0125,
+        longDelta:.007
+      },
       its: [{user: 'Tom', lat: 37.773, long: -122.4073}, {user: 'Tom2', lat: 37.777, long: -122.4077}],
       players: [{user: 'Tim', lat: 37.771, long: -122.4071}, {user: 'Tam', lat: 37.774, long: -122.4078}, {user: 'Tum', lat: 37.778, long: -122.4073}],
       tagged: true
@@ -23,18 +29,29 @@ export default class CurrentGame extends React.Component {
     title: 'Tag Map'
   }
 
+
+
   componentDidMount(){
+    navigator.geolocation.getCurrentPosition(
+      (success)=>{
+        this.setState({
+          lat:success.coords.latitude,
+          long:success.coords.longitude,
+          latDelta:.0125,
+          longDelta:.007
+      })},
+      (error)=>{},
+      {});
     this.watchId = setInterval(()=>{navigator.geolocation.getCurrentPosition(
       (success)=>{
         this.setState({
-        lat:success.coords.latitude,
-        long:success.coords.longitude,
-        latDelta:.0125,
-        longDelta:.007
+          userLoc: {
+            lat:success.coords.latitude,
+            long:success.coords.longitude
+          }
       })},
       (error)=>{},
-      { distanceFilter: 1 })}, 3000)
-
+      {})}, 3000)
   }
 
   componentWillUnmount() {
@@ -54,6 +71,16 @@ export default class CurrentGame extends React.Component {
     )
   }
 
+  regionChange(region){
+    this.setState({
+      lat:region.latitude,
+      long:region.longitude,
+      latDelta:region.latitudeDelta,
+      longDelta:region.longitudeDelta
+    })
+  }
+
+
   render() {
     return (
       <View style={{flex: 1}}>
@@ -65,11 +92,13 @@ export default class CurrentGame extends React.Component {
             longitude:this.state.long,
             latitudeDelta:this.state.latDelta,
             longitudeDelta: this.state.longDelta
-          }}>
+          }}
+          onRegionChangeComplete={this.regionChange.bind(this)}
+          >
           <MapView.Marker
             coordinate={{
-              latitude: this.state.lat,
-              longitude:this.state.long
+              latitude: this.state.userLoc.lat,
+              longitude:this.state.userLoc.long
             }}
             title={'Me'}
             pinColor ={'#4286f4'}
