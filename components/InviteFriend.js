@@ -9,7 +9,8 @@ export default class InviteFriend extends React.Component {
     this.state = {
       username: '',
       phone: '',
-      message: ''
+      message: '',
+      userId: ''
     }
   }
 
@@ -18,15 +19,49 @@ export default class InviteFriend extends React.Component {
     title: 'Add Friend'
   };
 
+  componentDidMount() {
+    AsyncStorage.getItem('token').then((data) => {
+      token = JSON.parse(data);
+      let userId = token.userId
+      this.setState({
+        userId: userId
+      })
+    })
+  }
+  
+
   add () {
     if (this.state.username && this.state.phone) {
-      // TODO: fetch call - check if user exists
-      Alert.alert(
-        'Success',
-        'Request Sent!',
-        [{text: 'Dismiss'}] // Button
-      )
-      this.props.navigation.navigate('Friends');
+      fetch('localhost:1337/friends/addFriend/' + this.state.userId, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          friend: this.state.username
+        })
+      })
+
+      .then((resp) => {
+        if (resp.status === 200) {
+          console.log("success sending friend request", resp);
+          Alert.alert(
+            'Success',
+            'Request Sent!',
+            [{text: 'Dismiss'}] // Button
+          )
+          this.props.navigation.navigate('Friends');
+
+        } else {
+          this.setState({
+            message: resp.message
+          })
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log("error:", err);
+      });
     } else {
       this.setState({message: 'Server error. Retry'})
     }
@@ -41,12 +76,6 @@ export default class InviteFriend extends React.Component {
           style={mainStyles.textInput}
           placeholder="Enter friend username"
           onChangeText={(text) => this.setState({username: text})}
-        />
-        <TextInput
-          style={mainStyles.textInput}
-          secureTextEntry={true}
-          placeholder="Enter friend phone"
-          onChangeText={(text) => this.setState({phone: text})}
         />
         <TouchableOpacity onPress={ () => this.add() } style={[mainStyles.button, mainStyles.blue]}>
           <Text style={mainStyles.buttonLabel}>Send Request</Text>

@@ -1,8 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Button } from 'react-native';
-import mainStyles from '../../styles.js'
-import Home from '../Home';
-import InvitePlayers from './InvitePlayers';
+import mainStyles from '../../styles.js';
 
 
 export default class AboutGame extends React.Component {
@@ -17,7 +15,8 @@ export default class AboutGame extends React.Component {
     super();
     this.state = {
       title: '',
-      message: ''
+      message: '',
+      userId: ''
     }
   }
 
@@ -28,9 +27,35 @@ export default class AboutGame extends React.Component {
 
   submit() {
     if (this.state.title) {
-      // TODO: fetch POST
-      console.log('submited details,', this.state.title);
-      this.props.navigation.navigate('InvitePlayers');
+      fetch('localhost:1337/games/creategame/' + this.state.userId, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: this.state.title
+        })
+      })
+      .then((resp) => {
+        
+        if (resp.status === 200) {
+          console.log("success", resp);
+          this.props.navigation.navigate('InvitePlayers');
+
+        } else {
+          this.setState({
+            message: resp.message
+          })
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log("error:", err);
+      });
+
+
+
+
     } else {
       this.setState({message: 'Server error. Retry'})
     }
@@ -40,6 +65,15 @@ export default class AboutGame extends React.Component {
     this.props.navigation.setParams({
       onLeftPress: this.back
     })
+
+    AsyncStorage.getItem('token').then((data) => {
+      token = JSON.parse(data);
+      let userId = token.userId
+      this.setState({
+        userId: userId
+      })
+    })
+    
   }
   
   render() {

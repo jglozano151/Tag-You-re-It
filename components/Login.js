@@ -1,9 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, AsyncStorage } from 'react-native';
 import mainStyles from '../styles.js'
-import Register from './Register'
-import Home from './Home'
-
 
 export default class Login extends React.Component {
   constructor() {
@@ -22,14 +19,32 @@ export default class Login extends React.Component {
 
   login () {
     if (this.state.username && this.state.password) {
-      // TODO: fetch
-      console.log('loggedin,', this.state.username, this.state.password);
-
-      AsyncStorage.setItem('token', JSON.stringify({
-        userId: '1' // will be set to return value of fetch
-      }));
-
-      this.props.navigation.navigate('Home');
+      fetch('localhost:1337/login', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+      .then(resp => {
+        if (resp.status === 200) {
+          console.log('logged in! resp', resp);
+          AsyncStorage.setItem('token', JSON.stringify({
+            userId: resp.user.id
+          }))
+          this.props.navigation.navigate('Home');
+        } else {
+          console.log("error!:", resp);
+          this.setState({message: 'Server error. Retry'})
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log("error:", err);
+      });
     } else {
       this.setState({message: 'Server error. Retry'})
     }
