@@ -29,7 +29,8 @@ const Game = mongoose.model('Game', {
   },
   createdAt: Date,
   owner: String,
-  gameStatus: String
+  gameStatus: String,
+  it: Array
 })
 
 app.use(express.static(path.join(__dirname, 'build')));
@@ -159,8 +160,13 @@ app.post('/games/creategame/:user', function(req, res) {
 
 // Initializes the game
 app.get('/games/initialize/:game', function(req, res) {
-  Game.findByIdAndUpdate(req.params.id, {gameStatus: 'active'})
-    .then(res.send('Game started!'))
+  Game.findById(req.params.game)
+    .then((game) => {
+      let participants = game.participants.joined;
+      let newIt = participants[Math.floor(Math.random()*participants.length)]
+      Game.findByIdAndUpdate(req.params.game, {gameStatus: 'active', it: [newIt]})
+        .then(res.send('Game started!'))
+    })
 })
 
 // Turns the user's game status from pending to active. Takes 'game' query that
@@ -240,6 +246,46 @@ app.post('/games/acceptgame/:game', function(req, res) {
             .then(res.json('Accepted game!'))
         })
       })
+    })
+})
+
+// Add a new tag, by passing in the user to be tagged as a query. This post will
+// update the tags array and also return game status, with 'completed' if the game is over.
+// at this point, frontend should do a 'get' to games/endgame/:game to end the game
+// for each user (passed in as query)
+app.post('/games/newtag/:game', function(req, res) {
+  Game.findById(req.params.game)
+    .then((game) => {
+      let itPlayers = game.it
+      itPlayers.push(req.query.user)
+      let status = game.gameStatus
+      if (game.it.length === game.participants.length - 1) {
+        status = 'completed'
+      }
+      Game.findByIdAndUpdate(req.params.game, {it: itPlayers, gameStatus: status}, function(err, game) {
+        res.send({gamestatus: game.gameStatus})
+      })
+    })
+})
+
+// A request must be made here for each user in the game after the game status is 'completed'
+// pass in the user as a query.
+app.post('/games/endgame/:game', function(req, res) {
+  User.findById(req.query.user)
+    .then((user) => {
+      let activeGames = user.games.active;
+      let endedGames = user.games.ended;
+      endedGames.push(req.params.game);
+      activeGames.splice(activeGames.indexOf(req.params.game), 1)
+      User.findByIdAndUpdate(req.query.user, {
+        games: {
+          active: activeGames,
+          pending: user.games.pending,
+          invitedTo: user.games.invitedTo,
+          ended: endedGames
+        }
+      })
+        .then(res.send('Players are ready...'))
     })
 })
 
