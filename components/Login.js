@@ -16,7 +16,8 @@ export default class Login extends React.Component {
   }
 
   static navigationOptions = {
-    title: 'Login'
+    title: 'Login',
+    headerLeft: null
   };
 
   login () {

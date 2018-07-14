@@ -3,7 +3,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  AsyncStorage
 } from 'react-native';
 import mainStyles from '../styles.js'
 
@@ -28,9 +29,10 @@ export default class Home extends React.Component {
   }
 
   logout() {
-    alert('bye')
+    AsyncStorage.removeItem('token')
+    .then(this.props.navigation.navigate('Login')) 
+    .catch((err)=>{console.log(err)})
   }
-
 
 
   render() {
