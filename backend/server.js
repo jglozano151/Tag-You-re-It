@@ -42,11 +42,10 @@ app.get('/', function(req, res) {
 
 // Returns a status that says 'registered' if successful and puts the new user in the database
 app.post('/register', function(req, res) {
-  console.log('here');
-  console.log(req.body.username)
   let newUser = new User({username: req.body.username, password: req.body.password})
   newUser.save()
-    .then(res.json({status: 'Registered!'}))
+    .then(res.json({status: 200, message: "Registered!"}))
+    .catch((err) => res.json({status: 'Error: ' + err}))
 })
 
 // Returns the user object and a status of successful if the login info is valid
@@ -54,10 +53,10 @@ app.post('/login', function(req, res) {
   User.findOne({username: req.body.username, password: req.body.password})
     .then((user) => {
       if (user) {
-        res.json({status: 'Login Success!', user: user})
+        res.json({status: 200, message: 'Login success!', user: user})
       }
-      res.json({status: 'Invalid Login'})
     })
+    .catch((err) => res.json({status: 400 'Error: invalid login!'}))
 })
 
 // Returns active and pending game ids for the user as separate arrays
@@ -97,26 +96,31 @@ app.get('/users/:user', function(req, res) {
   })
 })
 
-// Add friend, pass in a query of the id of the friend you want to send the request to
+// Add friend, pass in the body the username of the friend you want to send the request to
 app.post('/friends/addFriend/:user', function(req, res){
-  console.log(req.query.friend)
   User.findById(req.params.user)
     .then((user) => {
       let friends = user.friends
-      friends.push(req.query.friend)
+      var username = user.username
+      friends.push(req.body.friend)
       User.findByIdAndUpdate(req.params.user, {friends: friends})
-        .then(User.findById(req.query.friend)
-            .then((friend) => {
-              let newRequests = friend.requests
-              newRequests.push(req.params.user)
-              User.findByIdAndUpdate(req.query.friend, {requests: newRequests})
-                .then(res.send({status: 'Request'}))
-            }))
+        .then(User.findBy({username: req.body.friend})
+          .then((friend) => {
+            let newRequests = friend.requests
+            newRequests.push(username)
+            User.findByIdAndUpdate(req.body.friend, {requests: newRequests})
+              .then(res.send({status: 200}))
+              .catch((err) => res.send({status: 400, message: err}))
+          })
+          .catch((err) => res.send({status: 400, message: err}))
+        )
+        .catch((err) => res.send({status: 400, message: err}))
     })
+    .catch((err) => res.send({status: 400, message: err}))
 })
 
-// Allows the user to accept a specific friend request. Takes a query 'request' that
-// is the id of the user who sent the request
+// Allows the user to accept a specific friend request. Takes a body element 'request' that
+// is the username of the user who sent the request
 app.post('/friends/acceptrequest/:user', function(req, res) {
   User.findById(req.params.user)
     .then((user) => {
@@ -125,11 +129,11 @@ app.post('/friends/acceptrequest/:user', function(req, res) {
       for (let i = 0; i < newRequests.length; i++) {
         if (req.query.request === newRequests[i]) {
           newRequests.splice(newRequests.indexOf(req.query.request), 1)
-          newFriends.push(req.query.request)
+          newFriends.push(req.body.request)
         }
       }
       User.findByIdAndUpdate(req.params.user, {friends: newFriends, requests: newRequests})
-        .then(res.send({status: 'Accepted'}))
+        .then(res.send({status: 200, message: 'accepted'}))
     })
 })
 
