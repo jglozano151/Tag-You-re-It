@@ -9,7 +9,7 @@ export default class AboutGame extends React.Component {
       title: 'Create New Game',
       headerLeft: <Button title='Back' onPress={ () => {navigation.state.params.onLeftPress()} } />
     }
-  );
+  );ˀ
 
   constructor() {
     super();
@@ -39,8 +39,12 @@ export default class AboutGame extends React.Component {
       .then((resp) => {
         
         if (resp.status === 200) {
-          console.log("success", resp);
-          this.props.navigation.navigate('InvitePlayers');
+          console.log("success", resp.game);
+          let gameId = resp.game.id;
+          console.log("gameId", gameId);
+          this.props.navigation.navigate('InvitePlayers', {
+            gameId: gameId
+          });
 
         } else {
           this.setState({

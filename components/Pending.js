@@ -54,44 +54,38 @@ export default class Pending extends React.Component {
       console.log("no gameId?", gameId);
     }
     
-
-    // TODO: fetch GET game based on Id
-    let result = {
-      title: 'Test Game',
-      participants: {
-        'joined': [{username: 'Tom', id: '1'}, {
-          username: 'bob', id: '2'},
-          {username: 'Tommy', id: '3'}, 
-          {username: 'bb', id: '4'}, 
-          {username: 'Tomaa', id: '5'}, 
-          {username: 'Tom!?', id: '6'}, 
-          {username: 'Tomaba', id: '7'}, 
-          {username: 'Tom!?', id: '8'}, 
-        ],
-        'invited':[{username: 'bill', id: '9'}, 
-        {username: 'sally', id: '10'}, 
-        {username: 'nick', id: '11'}, 
-        {username: 'joseph', id: '12'}, 
-        {username: 'demi', id: '13'}]
-      },
-      owner: '2',
-      ownerName: 'sally' // TODO: fetch user baesd on owner
-    }
-
-    this.setState({
-      title: result.title,
-      pJoined: result.participants.joined,
-      pInvited: result.participants.invited,
-      ownerId: result.owner,
-      ownerName: result.ownerName
+    fetch('localhost:1337/game/' + gameId)
+    .then(resp => {
+      if (resp.status === 200) {
+        console.log("success getting game and owner", resp.game, resp.owner);
+        this.setState({
+          title: resp.game.title,
+          pJoined: resp.game.participants.joined,
+          pInvited: resp.game.participants.invited,
+          ownerId: resp.owner.id,
+          ownerName: resp.owner.username
+        })
+      } else {
+        console.log("error!:", resp.message);
+        this.setState({
+          message: 'Sever error'
+        })
+      }
     })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      console.log("error:", err);
+      this.setState({
+        message: 'Server Error'
+      })
+    });
   }
 
   _renderRow1 = (item) => {
     return (
       <View style = {styles.friendSelected}>       
         <Text style = {mainStyles.textSmall}>{item.username}</Text>
-        
+      
       </View>
     )
   }
@@ -105,8 +99,52 @@ export default class Pending extends React.Component {
   }
 
   start () {
-    // TODO: navigate to CurrentGame; notify everyone?
     console.log("started game:", this.state.gameId);
+    fetch('localhost:1337/games/initialize/' + gameId)
+    .then(resp => {
+      if (resp.status === 200) {
+        console.log('success starting game :', resp);
+
+        fetch('localhost:1337/games/initializeusers', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            players: this.state.pJoined
+          })
+        })
+        .then((resp) => {     
+          if (resp.status === 200) {
+            console.log("success initializing user:", resp);
+            this.props.navigation.navigate('Games');    
+          } else {
+            this.setState({
+              message: 'Server Error'
+            })
+          }
+        })
+        .catch((err) => {
+          /* do something if there was an error with fetching */
+          console.log("error:", err);
+        });
+        
+
+
+      } else {
+        console.log("error!:", resp.message);
+        this.setState({
+          message: 'Sever error'
+        })
+      }
+    })
+    .catch((err) => {
+      /* do something if there was an error with fetching */
+      console.log("error:", err);
+      this.setState({
+        message: 'Server Error'
+      })
+    });
   }
 
   delete() {
@@ -117,7 +155,7 @@ export default class Pending extends React.Component {
         {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
         {text: 'Proceed', onPress: () => {
           // TODO fetch delete the game; navigate to Games
-          
+
         }},
       ]
     )

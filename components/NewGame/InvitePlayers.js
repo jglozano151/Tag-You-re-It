@@ -11,30 +11,41 @@ export default class InvitePlayers extends React.Component {
     }
   );
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       title: '',
       message: '',
-      friends: [{username: 'Tom', id: '1'}, {
-        username: 'bob', id: '2'},
-        {username: 'Tommy', id: '3'}, 
-        {username: 'bb', id: '4'}, 
-        {username: 'Tomaa', id: '5'}, 
-        {username: 'Tom!?', id: '6'}, 
-        {username: 'Tomaba', id: '7'}, 
-        {username: 'Tom!?', id: '8'}, 
-        {username: 'bill', id: '9'}, 
-        {username: 'sally', id: '10'}, 
-        {username: 'nick', id: '11'}, 
-        {username: 'joseph', id: '12'}, 
-        {username: 'demi', id: '13'}],
-      selected: []
+      friends: [],
+      selected: [],
+      gameId: ''
     }
   }
 
   componentDidMount () {
-    // TODO: fetch GET friends
+
+    let gameId = this.props.navigation.getParam('gameId');
+    console.log("gameId", gameId);
+    this.setState({
+      gameId: gameId
+    })
+
+    fetch('localhost:1337/friends/' + this.state.userId)
+    .then((resp) => {
+      if (resp.status === 200) {
+        console.log("success", resp);
+        this.setState({
+          friends: resp.friends
+        })
+      } else {
+        console.log("error!:", resp.message);
+        this.setState({message: 'Server error. Retry'})
+      }
+    })
+    .catch((err) => {
+      console.log("error:", err);
+      this.setState({message: 'Server error'})
+    })
   }
 
   press(item) {
@@ -79,8 +90,31 @@ export default class InvitePlayers extends React.Component {
     console.log("invite selected Array:", this.state.selected);
     // must invite at least 2 people
     if (this.state.selected.length >= 2) {
-      // TODO: fetch POST
-      this.props.navigation.navigate('Pending');
+      fetch('localhost:1337/games/inviteplayers', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          game: gameId,
+          players: selected
+        })
+      })
+      .then((resp) => {     
+        if (resp.status === 200) {
+          console.log("success:", resp);
+          this.props.navigation.navigate('Pending');    
+        } else {
+          this.setState({
+            message: resp.message
+          })
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log("error:", err);
+      });
+
     } else {
       this.setState({
         message: 'Must invite at least 2 friends'
