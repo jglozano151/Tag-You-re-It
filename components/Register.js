@@ -1,8 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 import mainStyles from '../styles.js'
-import Login from './Login'
-
 
 export default class Register extends React.Component {
   constructor() {
@@ -22,14 +20,36 @@ export default class Register extends React.Component {
 
   register () {
     if (this.state.username && this.state.password) {
-      // TODO: fetch call
-      console.log("registered:", this.state.username, this.state.password, this.state.phone)
-      Alert.alert(
-        'Success',
-        'Successfully Register! Redirecting to Login',
-        [{text: 'Dismiss'}] // Button
-      )
-      this.props.navigation.navigate('Login');
+      // fetch call
+      fetch('localhost:1337/register', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: this.state.username,
+          password: this.state.password,
+        })
+      })
+      .then(resp => {
+        if (resp.status === 200) {
+          // success
+          console.log("registered:", this.state.username, this.state.password, this.state.phone)
+          Alert.alert(
+            'Success',
+            'Successfully Register! Redirecting to Login',
+            [{text: 'Dismiss'}] // Button
+          )
+          this.props.navigation.navigate('Login');
+        } else {
+          console.log("error!! :", resp.status);
+          this.setState({message: 'Server error. Retry'})
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log("error:", err);
+      });
     } else {
       this.setState({message: 'Server error. Retry'})
     }
