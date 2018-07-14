@@ -18,8 +18,10 @@ export default class Login extends React.Component {
   };
 
   componentDidMount(){
-    AsyncStorage.getItem('token').then((value) => {
-      if(value){
+    AsyncStorage.getItem('token').then((result) => {
+      return JSON.parse(result)})
+    .then((value) => {
+      if(value.userId){
         this.props.navigation.navigate('Home')
       }
     })
@@ -40,9 +42,8 @@ export default class Login extends React.Component {
       .then(resp => (resp.json()))
       .then((result) => {
         if (result.status === 200) {
-          console.log('logged in! resp', result);
           AsyncStorage.setItem('token', JSON.stringify({
-            userId: result.user.id
+            userId: result.user._id
           }))
           .then(this.props.navigation.navigate('Home'));
         } else {

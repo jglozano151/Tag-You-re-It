@@ -18,33 +18,40 @@ export default class InvitePlayers extends React.Component {
       message: '',
       friends: [],
       selected: [],
-      gameId: ''
+      gameId: '',
+      userId: ''
     }
   }
 
   componentDidMount () {
 
     let gameId = this.props.navigation.getParam('gameId');
-    console.log("gameId", gameId);
-    this.setState({
-      gameId: gameId
+    AsyncStorage.getItem('token')
+    .then((data) => {
+      token = JSON.parse(data);
+      let userId = token.userId
+      this.setState({
+        userId: userId,
+        gameId: gameId
+      })
     })
-
+    .then(()=>{
     fetch(global.NGROK + '/friends/' + this.state.userId)
-    .then((resp) => {
-      if (resp.status === 200) {
-        console.log("success", resp);
+    .then((resp) => (resp.json())
+    .then((result)=> {
+      if (result.status === 200) {
+        console.log("success", result);
         this.setState({
-          friends: resp.friends
+          friends: result.friends
         })
       } else {
-        console.log("error!:", resp.message);
+        console.log("error!:", result.message);
         this.setState({message: 'Server error. Retry'})
       }
     })
+    )})
     .catch((err) => {
       console.log("error:", err);
-      this.setState({message: 'Server error'})
     })
   }
 

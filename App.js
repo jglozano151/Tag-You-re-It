@@ -47,4 +47,4 @@ export default createStackNavigator({
   CurrentGame: {
     screen: CurrentGame,
   }
-}, {initialRouteName: 'CurrentGame'});
+}, {initialRouteName: 'Login'});

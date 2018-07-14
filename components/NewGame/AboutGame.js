@@ -39,45 +39,44 @@ export default class AboutGame extends React.Component {
   }
 
   submit() {
-    console.log(this.state.userId);
-    // if (this.state.title) {
-    //   fetch(global.NGROK +'/games/creategame/' + this.state.userId, {
-    //     method: 'POST',
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     },
-    //     body: JSON.stringify({
-    //       title: this.state.title
-    //     })
-    //   })
-    //   .then((result) => (result.json()))
-    //   .then((resp) => {
-    //
-    //     if (resp.status === 200) {
-    //       console.log("success", resp);
-    //       let gameId = resp.game.id;
-    //       console.log("gameId", gameId);
-    //       this.props.navigation.navigate('InvitePlayers', {
-    //         gameId: gameId
-    //       });
-    //
-    //     } else {
-    //       this.setState({
-    //         message: resp.message
-    //       })
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     /* do something if there was an error with fetching */
-    //     console.log("error:", err);
-    //   });
-    //
-    //
-    //
-    //
-    // } else {
-    //   this.setState({message: 'Server error. Retry'})
-    // }
+    if (this.state.title) {
+      fetch(global.NGROK +'/games/creategame/' + this.state.userId, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: this.state.title
+        })
+      })
+      .then((resp) => (resp.json()))
+      .then((result) => {
+
+        if (result.status === 200) {
+          console.log("success", result);
+          let gameId = result.game._id;
+          console.log("gameId", gameId);
+          this.props.navigation.navigate('InvitePlayers', {
+            gameId: gameId
+          });
+
+        } else {
+          this.setState({
+            message: result.message
+          })
+        }
+      })
+      .catch((err) => {
+        /* do something if there was an error with fetching */
+        console.log("error:", err);
+      });
+
+
+
+
+    } else {
+      this.setState({message: 'Server error. Retry'})
+    }
   }
 
   componentDidMount() {
