@@ -37,7 +37,7 @@ export default class AboutGame extends React.Component {
         })
       })
       .then((resp) => {
-        
+
         if (resp.status === 200) {
           console.log("success", resp);
           this.props.navigation.navigate('InvitePlayers');
@@ -73,9 +73,9 @@ export default class AboutGame extends React.Component {
         userId: userId
       })
     })
-    
+
   }
-  
+
   render() {
     return (
       <View style={mainStyles.container}>

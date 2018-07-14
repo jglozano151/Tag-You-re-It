@@ -4,7 +4,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ListView
+  ListView,
+  AsyncStorage
 } from 'react-native';
 import mainStyles from '../styles.js'
 
@@ -14,10 +15,11 @@ export default class Friends extends React.Component {
     super()
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = ({
-      dataSource: ds.cloneWithRows([{username:'Tom'}, {username:'Tom'}, {username:'Tom'}, {username:'Tom'}, {username:'Tom'},
-      {username:'Tom'},{username:'Tom'}, {username:'Tom'}, {username:'Tom'},{username:'Tom'},{username:'Tom'}, {username:'Tom'}, {username:'Tom'}]),
-      requests: ds.cloneWithRows([{username:'Tim', _id: 1}, {username:'Tim', _id: 1}, {username:'Tim', _id: 1}]),
-      requestsPresent: true
+      dataSource: ds.cloneWithRows([]),
+      requests: ds.cloneWithRows([]),
+      requestsPresent: true,
+      ds: ds,
+      userId: ''
     })
   }
   static navigationOptions = {
@@ -25,6 +27,29 @@ export default class Friends extends React.Component {
   };
 
   componentDidMount(){
+    AsyncStorage.getItem('token').then((data) => {
+     token = JSON.parse(data);
+     let userId = token.userId
+     this.setState({
+       userId: userId
+     })
+   }).then(()=>{fetch('http://localhost:1337/friends/' + userId)
+            .then(resp => (resp.json()))
+            .then(obj => {
+              let requests = obj.requests;
+              let friends = obj.friends;
+
+              requests.map(req => (fetch('http://localhost:1337/users/'+ req)))
+              Promise.all(requests)
+              .then(responses => (responses.map(response => (response.json()))))
+              .then(finalAry => this.setState({requests: this.state.ds(finalAry)}))
+
+              friends.map(friendName => (fetch('http://localhost:1337/users/'+ friendName)))
+              Promise.all(friends)
+              .then(friends => (friends.map(friend => (friend.json()))))
+              .then(finalFriends => this.setState({requests: this.state.ds(finalFriends)}))
+            })})
+            .catch(err=> {console.log('ERROR', err);})
 
   }
 

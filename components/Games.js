@@ -4,7 +4,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ListView
+  ListView,
+  AsyncStorage
 } from 'react-native';
 import mainStyles from '../styles.js'
 
@@ -27,34 +28,51 @@ export default class Home extends React.Component {
   };
 
   componentDidMount(){
-    let pending = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},];
-    let active = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'active'}];
-    let complete = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}, {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}];
-    let requests = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'requests', _id: 1}, {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'requests', _id: 2}];
-    this.setState({
-      pending: this.state.ds.cloneWithRows(pending),
-      active: this.state.ds.cloneWithRows(active),
-      complete: this.state.ds.cloneWithRows(complete),
-      requests: this.state.ds.cloneWithRows(requests)
-    })
+    AsyncStorage.getItem('token').then((data) => {
+     token = JSON.parse(data);
+     let userId = token.userId
+     this.setState({
+       userId: userId
+     })
+   })
+   .then(()=>{fetch('http://localhost:1337/games/' + userId)
+             .then(resp=>(resp.json()))
+             .then(result => {
+               let pending = result.pending;
+               let active = result.active;
+               let complete = result.ended;
+               let requests = result.invitedTo;
+
+               pending.map(pen => (fetch('http://localhost:1337/games/'+ pen)))
+               Promise.all(pending)
+               .then(pend => (pend.map(pen => (pen.json()))))
+               .then(finalPend => this.setState({pending: this.state.ds(finalPend)}))
+
+               active.map(act => (fetch('http://localhost:1337/games/'+ act)))
+               Promise.all(active)
+               .then(active => (active.map(act => (act.json()))))
+               .then(finalAct => this.setState({active: this.state.ds(finalAct)}))
+
+               complete.map(comp => (fetch('http://localhost:1337/games/'+ comp)))
+               Promise.all(complete)
+               .then(comp => (comp.map(com => (com.json()))))
+               .then(finalComp => this.setState({complete: this.state.ds(finalComp)}))
+
+               requests.map(req => (fetch('http://localhost:1337/games/'+ req)))
+               Promise.all(requests)
+               .then(responses => (responses.map(response => (response.json()))))
+               .then(finalReq => this.setState({requests: this.state.ds(finalAReq)}))
+             })})
+    .catch(err=> {console.log('ERROR', err);})
   }
 
   pending(id){
     this.props.navigation.navigate('Pending', {id: id})
   }
 
-  active(id){
-    this.props.navigation.navigate('CurrentGame', {id: id})
+  active(game){
+    this.props.navigation.navigate('CurrentGame', {game: game})
   }
-
-  launchGame(id){
-    alert('You are going to launch ' + id + '. Get ready to run')
-  }
-
 
   accept(id){
     alert("You've Accepted" + id)
@@ -74,7 +92,7 @@ export default class Home extends React.Component {
               dataSource={this.state.active}
               renderRow={(rowData) => {
                 return <View style = {styles.active}>
-                  <TouchableOpacity onPress = {()=>{this.active(rowData._id)}}><Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.
+                  <TouchableOpacity onPress = {()=>{this.active(rowData)}}><Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.
                   {rowData.participants.joined} players</Text></TouchableOpacity>
                 </View>}}
             />

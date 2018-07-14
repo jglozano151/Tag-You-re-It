@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, AsyncStorage } from 'react-native';
 import {
   MapView
 } from 'expo';
@@ -20,9 +20,10 @@ export default class CurrentGame extends React.Component {
         latDelta:.0125,
         longDelta:.007
       },
-      its: [{user: 'Tom', lat: 37.773, long: -122.4073}, {user: 'Tom2', lat: 37.777, long: -122.4077}],
-      players: [{user: 'Tim', lat: 37.771, long: -122.4071}, {user: 'Tam', lat: 37.774, long: -122.4078}, {user: 'Tum', lat: 37.778, long: -122.4073}],
-      tagged: true
+      its: [],
+      players: [],
+      tagged: false,
+      currentGame: {}
     })
   }
   static navigationOptions = {
@@ -42,20 +43,51 @@ export default class CurrentGame extends React.Component {
       })},
       (error)=>{},
       {});
-    this.watchId = setInterval(()=>{navigator.geolocation.getCurrentPosition(
-      (success)=>{
-        this.setState({
-          userLoc: {
-            lat:success.coords.latitude,
-            long:success.coords.longitude
-          }
-      })},
-      (error)=>{},
-      {})}, 3000)
+    AsyncStorage.getItem('token').then((data) => {
+       token = JSON.parse(data);
+       let userId = token.userId
+       this.setState({
+         userId: userId
+       })
+     })
+     .then(() => {
+       let game = this.props.navigation.getParam('game')
+       let tagged;
+       if (game.it.indexOf(this.state.userId) !== -1) tagged = true;
+       this.setState({
+         currentGame: game,
+         its: game.it,
+         players: game.participants.joined,
+         tagged: tagged
+       })})
+       .catch(err=> {console.log('ERROR', err);})
+    this.watchId = setInterval(()=>this.updateLocation(), 3000)
   }
 
   componentWillUnmount() {
     clearInterval(this.watchId);
+  }
+
+  updateLocation(){
+    navigator.geolocation.getCurrentPosition(
+      (success)=>{
+        fetch('http://localhost:1337/updatelocation/' + this.state.userId, {
+          method: 'post',
+          body: JSON.stringify({
+            latitude: success.coords.latitude,
+            longitude: success.coords.longitude
+          })
+        })
+        .then(()=> {
+          this.setState({
+            userLoc: {
+              lat:success.coords.latitude,
+              long:success.coords.longitude
+            }
+          })
+      })},
+      (error)=>{},
+      {})
   }
 
   here(){
