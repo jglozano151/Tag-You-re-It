@@ -20,8 +20,7 @@ export default class Register extends React.Component {
 
   register () {
     if (this.state.username && this.state.password) {
-      // fetch call
-      fetch('localhost:1337/register', {
+      fetch(global.NGROK + '/register', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"
