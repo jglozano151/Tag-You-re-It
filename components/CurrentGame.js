@@ -5,7 +5,6 @@ import {
 } from 'expo';
 import mainStyles from '../styles.js'
 
-
 export default class CurrentGame extends React.Component {
   constructor(props){
     super(props)
@@ -33,35 +32,18 @@ export default class CurrentGame extends React.Component {
 
 
   componentDidMount(){
-    navigator.geolocation.getCurrentPosition(
-      (success)=>{
-        this.setState({
-          lat:success.coords.latitude,
-          long:success.coords.longitude,
-          latDelta:.0125,
-          longDelta:.007
-      })},
-      (error)=>{},
-      {});
-    AsyncStorage.getItem('token').then((data) => {
-       token = JSON.parse(data);
-       let userId = token.userId
-       this.setState({
-         userId: userId
-       })
-     })
-     .then(() => {
-       let game = this.props.navigation.getParam('game')
-       let tagged;
-       if (game.it.indexOf(this.state.userId) !== -1) tagged = true;
-       this.setState({
-         currentGame: game,
-         its: game.it,
-         players: game.participants.joined,
-         tagged: tagged
-       })})
-       .catch(err=> {console.log('ERROR', err);})
+    this.here();
+    this.updateLocation();
     this.watchId = setInterval(()=>this.updateLocation(), 3000)
+    AsyncStorage.getItem('token')
+    .then((data) => {
+      token = JSON.parse(data);
+      let userId = token.userId
+      this.setState({
+        userId: userId
+      })
+    })
+    .catch(err=> {console.log('ERROR', err)})
   }
 
   componentWillUnmount() {
@@ -71,15 +53,26 @@ export default class CurrentGame extends React.Component {
   updateLocation(){
     navigator.geolocation.getCurrentPosition(
       (success)=>{
-        fetch('http://localhost:1337/updatelocation/' + this.state.userId, {
+        fetch(global.NGROK + '/livegame/' + navigation.getParam('id'), {
           method: 'post',
           body: JSON.stringify({
             latitude: success.coords.latitude,
-            longitude: success.coords.longitude
+            longitude: success.coords.longitude,
+            id: this.state.userId
           })
         })
-        .then(()=> {
+        .then(resp=>(resp.json()))
+        .then((result)=> {
+          let tagged = false;
+          result.itPlayers.forEach((element) => {
+            if (element.id === this.state.userId)
+              tagged = true;
+            return;
+          })
           this.setState({
+            its:results.itPlayers,
+            players: results.notItPlayers,
+            tagged: tagged,
             userLoc: {
               lat:success.coords.latitude,
               long:success.coords.longitude

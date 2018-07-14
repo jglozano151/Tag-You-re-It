@@ -33,24 +33,22 @@ export default class Friends extends React.Component {
      this.setState({
        userId: userId
      })
-   }).then(()=>{fetch('http://localhost:1337/friends/' + userId)
+   }).then(()=>{fetch(global.NGROK + '/friends/' + userId)
             .then(resp => (resp.json()))
             .then(obj => {
               let requests = obj.requests;
               let friends = obj.friends;
 
-              requests.map(req => (fetch('http://localhost:1337/users/'+ req)))
-              Promise.all(requests)
-              .then(responses => (responses.map(response => (response.json()))))
-              .then(finalAry => this.setState({requests: this.state.ds(finalAry)}))
-
-              friends.map(friendName => (fetch('http://localhost:1337/users/'+ friendName)))
-              Promise.all(friends)
-              .then(friends => (friends.map(friend => (friend.json()))))
-              .then(finalFriends => this.setState({requests: this.state.ds(finalFriends)}))
+              Promise.all([
+                Promise.all(requests.map(req => (fetch(global.URL + '/users/'+ req).then(resp => (resp.json()))))),
+                Promise.all(friends.map(friendName => (fetch(global.URL + 'users/'+ friendName).then(resp => (resp.json())))))
+              ])
+              .then(final => this.setState({
+                requests: this.state.ds(final[0]),
+                friends: this.state.ds(final[1])
+              }))
             })})
             .catch(err=> {console.log('ERROR', err);})
-
   }
 
   addFriend(){

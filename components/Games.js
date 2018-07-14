@@ -35,33 +35,24 @@ export default class Home extends React.Component {
        userId: userId
      })
    })
-   .then(()=>{fetch('http://localhost:1337/games/' + userId)
+   .then(()=>{fetch(global.NGROK + '/games/' + userId)
              .then(resp=>(resp.json()))
              .then(result => {
-               let pending = result.pending;
+               let pending = result.games.pending;
                let active = result.active;
                let complete = result.ended;
                let requests = result.invitedTo;
-
-               pending.map(pen => (fetch('http://localhost:1337/games/'+ pen)))
-               Promise.all(pending)
-               .then(pend => (pend.map(pen => (pen.json()))))
-               .then(finalPend => this.setState({pending: this.state.ds(finalPend)}))
-
-               active.map(act => (fetch('http://localhost:1337/games/'+ act)))
-               Promise.all(active)
-               .then(active => (active.map(act => (act.json()))))
-               .then(finalAct => this.setState({active: this.state.ds(finalAct)}))
-
-               complete.map(comp => (fetch('http://localhost:1337/games/'+ comp)))
-               Promise.all(complete)
-               .then(comp => (comp.map(com => (com.json()))))
-               .then(finalComp => this.setState({complete: this.state.ds(finalComp)}))
-
-               requests.map(req => (fetch('http://localhost:1337/games/'+ req)))
-               Promise.all(requests)
-               .then(responses => (responses.map(response => (response.json()))))
-               .then(finalReq => this.setState({requests: this.state.ds(finalAReq)}))
+               Promise.all([
+               Promise.all(pending.map(pen => (fetch(global.NGROK + '/games/'+ pen).then(resp => (resp.json()))))),
+               Promise.all(active.map(act => (fetch(global.NGROK + '/games/'+ act).then(resp => (resp.json()))))),
+               Promise.all(complete.map(comp => (fetch(global.NGROK + '/games/'+ comp).then(resp => (resp.json()))))),
+               Promise.all(requests.map(req => (fetch(global.NGROK + '/games/'+ req).then(resp => (resp.json())))))])
+               .then(final => this.setState({
+                 pending: this.state.ds(final[0]),
+                 active: this.state.ds(final[1]),
+                 complete: this.state.ds(final[2]),
+                 requests: this.state.ds(final[3])
+               }))
              })})
     .catch(err=> {console.log('ERROR', err);})
   }
@@ -70,8 +61,8 @@ export default class Home extends React.Component {
     this.props.navigation.navigate('Pending', {id: id})
   }
 
-  active(game){
-    this.props.navigation.navigate('CurrentGame', {game: game})
+  active(id){
+    this.props.navigation.navigate('CurrentGame', {id: id})
   }
 
   accept(id){
@@ -92,7 +83,7 @@ export default class Home extends React.Component {
               dataSource={this.state.active}
               renderRow={(rowData) => {
                 return <View style = {styles.active}>
-                  <TouchableOpacity onPress = {()=>{this.active(rowData)}}><Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.
+                  <TouchableOpacity onPress = {()=>{this.active(rowData._id)}}><Text style = {mainStyles.textSmall}>{rowData.title} created {rowData.createdAt} by {rowData.owner}.
                   {rowData.participants.joined} players</Text></TouchableOpacity>
                 </View>}}
             />

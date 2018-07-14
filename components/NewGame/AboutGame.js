@@ -1,16 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Button , AsyncStorage} from 'react-native';
 import mainStyles from '../../styles.js';
 
 
 export default class AboutGame extends React.Component {
-  static navigationOptions = ({navigation}) => (
-    {
-      title: 'Create New Game',
-      headerLeft: <Button title='Back' onPress={ () => {navigation.state.params.onLeftPress()} } />
-    }
-  );ˀ
-
   constructor() {
     super();
     this.state = {
@@ -20,49 +13,71 @@ export default class AboutGame extends React.Component {
     }
   }
 
+  static navigationOptions = ({navigation}) => (
+    {
+      title: 'Create New Game',
+      headerLeft: <Button title='Back' onPress={ () => {navigation.state.params.onLeftPress()} } />
+    }
+  );
+
+
+  componentDidMount(){
+    console.log("TEST");
+    AsyncStorage.getItem('token').then((data) => {
+     token = JSON.parse(data);
+     let userId = token.userId
+     console.log('USer', userId);
+     this.setState({
+       userId: userId
+     })
+   })
+   .catch(err => {console.log('Error', err);})
+  }
 
   back = () => {
     this.props.navigation.navigate('Home');
   }
 
   submit() {
-    if (this.state.title) {
-      fetch('localhost:1337/games/creategame/' + this.state.userId, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          title: this.state.title
-        })
-      })
-      .then((resp) => {
-
-        if (resp.status === 200) {
-          console.log("success", resp.game);
-          let gameId = resp.game.id;
-          console.log("gameId", gameId);
-          this.props.navigation.navigate('InvitePlayers', {
-            gameId: gameId
-          });
-
-        } else {
-          this.setState({
-            message: resp.message
-          })
-        }
-      })
-      .catch((err) => {
-        /* do something if there was an error with fetching */
-        console.log("error:", err);
-      });
-
-
-
-
-    } else {
-      this.setState({message: 'Server error. Retry'})
-    }
+    console.log(this.state.userId);
+    // if (this.state.title) {
+    //   fetch(global.NGROK +'/games/creategame/' + this.state.userId, {
+    //     method: 'POST',
+    //     headers: {
+    //       "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //       title: this.state.title
+    //     })
+    //   })
+    //   .then((result) => (result.json()))
+    //   .then((resp) => {
+    //
+    //     if (resp.status === 200) {
+    //       console.log("success", resp);
+    //       let gameId = resp.game.id;
+    //       console.log("gameId", gameId);
+    //       this.props.navigation.navigate('InvitePlayers', {
+    //         gameId: gameId
+    //       });
+    //
+    //     } else {
+    //       this.setState({
+    //         message: resp.message
+    //       })
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     /* do something if there was an error with fetching */
+    //     console.log("error:", err);
+    //   });
+    //
+    //
+    //
+    //
+    // } else {
+    //   this.setState({message: 'Server error. Retry'})
+    // }
   }
 
   componentDidMount() {

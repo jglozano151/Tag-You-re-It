@@ -53,8 +53,8 @@ export default class Pending extends React.Component {
     } else {
       console.log("no gameId?", gameId);
     }
-    
-    fetch('localhost:1337/game/' + gameId)
+
+    fetch(global.NGROK +'/game/' + gameId)
     .then(resp => {
       if (resp.status === 200) {
         console.log("success getting game and owner", resp.game, resp.owner);
@@ -83,16 +83,16 @@ export default class Pending extends React.Component {
 
   _renderRow1 = (item) => {
     return (
-      <View style = {styles.friendSelected}>       
+      <View style = {styles.friendSelected}>
         <Text style = {mainStyles.textSmall}>{item.username}</Text>
-      
+
       </View>
     )
   }
 
   _renderRow2 = (item) => {
     return (
-      <View style = {styles.friend}>        
+      <View style = {styles.friend}>
         <Text style = {mainStyles.textSmall}>{item.username}</Text>
       </View>
     )
@@ -100,12 +100,12 @@ export default class Pending extends React.Component {
 
   start () {
     console.log("started game:", this.state.gameId);
-    fetch('localhost:1337/games/initialize/' + gameId)
+    fetch(global.NGROK +'/games/initialize/' + gameId)
     .then(resp => {
       if (resp.status === 200) {
         console.log('success starting game :', resp);
 
-        fetch('localhost:1337/games/initializeusers', {
+        fetch(global.NGROK +'/games/initializeusers', {
           method: 'POST',
           headers: {
             "Content-Type": "application/json"
@@ -114,10 +114,10 @@ export default class Pending extends React.Component {
             players: this.state.pJoined
           })
         })
-        .then((resp) => {     
+        .then((resp) => {
           if (resp.status === 200) {
             console.log("success initializing user:", resp);
-            this.props.navigation.navigate('Games');    
+            this.props.navigation.navigate('Games');
           } else {
             this.setState({
               message: 'Server Error'
@@ -128,7 +128,7 @@ export default class Pending extends React.Component {
           /* do something if there was an error with fetching */
           console.log("error:", err);
         });
-        
+
 
 
       } else {
@@ -167,7 +167,7 @@ export default class Pending extends React.Component {
 
     return (
       <View style={{flex: 1, backgroundColor: '#fff'}}>
-        
+
         <Text style={mainStyles.textAlert}>{this.state.message}</Text>
 
         <Text style={[mainStyles.textMed, {fontWeight: 'bold'}]}>Game title: {this.state.title}</Text>
@@ -180,7 +180,7 @@ export default class Pending extends React.Component {
           <ListView
             dataSource={ds.cloneWithRows(this.state.pJoined)}
             renderRow={this._renderRow1}
-          />   
+          />
         </View>
 
         <View style={{flex: 4}}>
@@ -189,12 +189,12 @@ export default class Pending extends React.Component {
           <ListView
             dataSource={ds.cloneWithRows(this.state.pInvited)}
             renderRow={this._renderRow2}
-          />  
+          />
         </View>
         {console.log("ownerId and userId:", this.state.ownerId, this.state.userId)}
 
-        { (this.state.ownerId === this.state.userId) ? 
-            <View style={{flex: 1, flexDirection: 'row', marginBottom: 10}}>         
+        { (this.state.ownerId === this.state.userId) ?
+            <View style={{flex: 1, flexDirection: 'row', marginBottom: 10}}>
               <TouchableOpacity onPress={ () => this.start() } style={[mainStyles.button, mainStyles.black, {flex: 1}]}>
                 <Text style={mainStyles.buttonLabel}>Start Game</Text>
               </TouchableOpacity>
@@ -205,8 +205,8 @@ export default class Pending extends React.Component {
             :
             <Text style={[mainStyles.textSmall, {fontStyle: 'italic'}]}>
               Waiting for creater to start the game
-            </Text> 
-          
+            </Text>
+
         }
 
       </View>

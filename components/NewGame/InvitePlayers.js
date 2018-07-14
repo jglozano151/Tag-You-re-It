@@ -30,7 +30,7 @@ export default class InvitePlayers extends React.Component {
       gameId: gameId
     })
 
-    fetch('localhost:1337/friends/' + this.state.userId)
+    fetch(global.NGROK + '/friends/' + this.state.userId)
     .then((resp) => {
       if (resp.status === 200) {
         console.log("success", resp);
@@ -90,7 +90,7 @@ export default class InvitePlayers extends React.Component {
     console.log("invite selected Array:", this.state.selected);
     // must invite at least 2 people
     if (this.state.selected.length >= 2) {
-      fetch('localhost:1337/games/inviteplayers', {
+      fetch(global.NGROK + '/games/inviteplayers', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"
@@ -100,10 +100,10 @@ export default class InvitePlayers extends React.Component {
           players: selected
         })
       })
-      .then((resp) => {     
+      .then((resp) => {
         if (resp.status === 200) {
           console.log("success:", resp);
-          this.props.navigation.navigate('Pending');    
+          this.props.navigation.navigate('Pending');
         } else {
           this.setState({
             message: resp.message
@@ -128,17 +128,17 @@ export default class InvitePlayers extends React.Component {
 
     return (
       <View style={{flex: 1, backgroundColor: '#fff'}}>
-        
+
         <Text style={mainStyles.textAlert}>{this.state.message}</Text>
 
         <Text style={mainStyles.textMed}>Click on names of friends you wish to invite</Text>
 
-        
+
         <View style = {{flex: 7}}>
           <ListView
             dataSource={ds.cloneWithRows(this.state.friends)}
             renderRow={this._renderRow}
-          />    
+          />
 
         </View>
 

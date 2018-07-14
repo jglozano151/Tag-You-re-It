@@ -41,7 +41,7 @@ export default class Register extends React.Component {
           )
           this.props.navigation.navigate('Login');
         } else {
-          console.log("error!! :", resp.status);
+          console.log("error!! :", resp);
           this.setState({message: 'Server error. Retry'})
         }
       })
