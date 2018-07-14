@@ -34,32 +34,36 @@ export default class Home extends React.Component {
        userId: token.userId
      })
    })
-   .then(()=>{fetch(global.NGROK + '/games/' + this.state.userId)
+   .then(()=>{fetch(global.NGROK + '/userGames/' + this.state.userId)
              .then(resp=>{
                console.log(resp);
                return resp.json()})
              .then(result => {
-               console.log("RESULT", result);
                let pending = result.pending;
                let active = result.active;
                let complete = result.ended;
                let requests = result.invitedTo;
-               console.log('pending', pending, 'active', active, 'complete', complete, 'active', requests);
                Promise.all([
                Promise.all(pending.map(pen => (fetch(global.NGROK + '/games/'+ pen).then(resp => (resp.json()))))),
                Promise.all(active.map(act => (fetch(global.NGROK + '/games/'+ act).then(resp => (resp.json()))))),
                Promise.all(complete.map(comp => (fetch(global.NGROK + '/games/'+ comp).then(resp => (resp.json()))))),
                Promise.all(requests.map(req => (fetch(global.NGROK + '/games/'+ req).then(resp => (resp.json())))))])
                .then(final => {
- console.log("Final", final);
+ console.log("Final", final[3]);
+                let requestsPresent = true;
+                if (final[3].length === 0){
+                  requestsPresent = false
+                  console.log("Phone", requestsPresent);
+                }
                  this.setState({
                  pending: this.state.ds(final[0]),
                  active: this.state.ds(final[1]),
                  complete: this.state.ds(final[2]),
-                 requests: this.state.ds(final[3])
+                 requests: this.state.ds(final[3]),
+                 requestsPresent: requestsPresent
                })})
              })})
-    .catch(err=> {console.log('ERROR', err);})
+    .catch(err=> {console.log('ERROR TEST__________________', err);})
   }
 
   pending(id){

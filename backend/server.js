@@ -64,9 +64,9 @@ app.post('/login', function(req, res) {
 })
 
 // Returns active and pending game ids for the user as separate arrays
-app.get('/games/:user', function(req, res) {
+app.get('/userGames/:user', function(req, res) {
   User.findById(req.params.user, function(err, user) {
-    console.log('Test',user);
+    console.log('Test', user);
     res.send({
       active: user.games.active,
       pending: user.games.pending,
@@ -81,11 +81,6 @@ app.get('/:game', function(req, res) {
   Game.findById(req.params.game, function(err, game) {
     res.send(game)
   })
-})
-
-// A personalized view of the game for a specific user...
-app.get('/games/:game?user', function(req, res) {
-
 })
 
 // Send arrays of the user's friends and friend requests back
