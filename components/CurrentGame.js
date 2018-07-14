@@ -43,14 +43,11 @@ export default class CurrentGame extends React.Component {
         userId: userId
       })
       this.updateLocation()
-      this.watchId = setInterval(()=>this.updateLocation(), 3000)
+      setInterval(()=>this.updateLocation(), 3000)
     })
     .catch(err=> {console.log('ERROR', err)})
   }
 
-  componentWillUnmount() {
-    clearInterval(this.watchId);
-  }
 
   updateLocation(){
     navigator.geolocation.getCurrentPosition(
@@ -75,7 +72,6 @@ export default class CurrentGame extends React.Component {
               tagged = true;
             return;
           })
-          console.log('---------------------------------------------------------------',result);
           this.setState({
             its:result.itPlayers,
             players: result.notItPlayers,
@@ -138,7 +134,7 @@ export default class CurrentGame extends React.Component {
             pinColor ={'#4286f4'}
             />
             {this.state.its.map((it)=> <MapView.Marker
-              key = {it.username}
+              key = {it._id}
               coordinate={{
                 latitude: it.location.latitude,
                 longitude: it.location.longitude
@@ -146,7 +142,7 @@ export default class CurrentGame extends React.Component {
               title={it.username}
               />)}
               {this.state.players.map((player)=> <MapView.Marker
-                key = {player.username}
+                key = {player._id}
                 coordinate={{
                   latitude: player.location.latitude,
                   longitude: player.location.longitude
@@ -159,9 +155,10 @@ export default class CurrentGame extends React.Component {
           <View style={{flex: 1, flexDirection: 'row'}}>
               {(this.state.tagged)?
                 <Text style = {[{flex: 3}, mainStyles.button, mainStyles.blue, mainStyles.buttonLabel, mainStyles.textMed]}>
-                Go Get {this.state.players[0]}!</Text>:
+                Go Find Someone
+              </Text>:
                 <Text style = {[{flex: 3}, mainStyles.button, mainStyles.blue, mainStyles.buttonLabel, mainStyles.textMed]}>
-                Watch Out For {this.state.its[0]}!
+                Be Careful
               </Text>}
             <TouchableOpacity
               onPress={()=>{this.here()}}
