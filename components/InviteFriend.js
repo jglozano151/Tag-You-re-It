@@ -28,11 +28,11 @@ export default class InviteFriend extends React.Component {
       })
     })
   }
-  
+
 
   add () {
     if (this.state.username && this.state.phone) {
-      fetch('localhost:1337/friends/addFriend/' + this.state.userId, {
+      fetch(global.NGROK + '/friends/addFriend/' + this.state.userId, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"

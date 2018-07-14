@@ -4,7 +4,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ListView
+  ListView,
+  AsyncStorage
 } from 'react-native';
 import mainStyles from '../styles.js'
 
@@ -27,20 +28,42 @@ export default class Home extends React.Component {
   };
 
   componentDidMount(){
-    let pending = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},
-    {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'pending'},];
-    let active = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'active'}];
-    let complete = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}, {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'complete'}];
-    let requests = [{title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'requests', _id: 1}, {title: "Tom's Game of Tag", participants: [], createdAt: 'TODAY', owner: 'Tom', gameStatus: 'requests', _id: 2}];
-    this.setState({
-      pending: this.state.ds.cloneWithRows(pending),
-      active: this.state.ds.cloneWithRows(active),
-      complete: this.state.ds.cloneWithRows(complete),
-      requests: this.state.ds.cloneWithRows(requests)
-    })
+    AsyncStorage.getItem('token').then((data) => {
+     token = JSON.parse(data);
+     this.setState({
+       userId: token.userId
+     })
+   })
+   .then(()=>{fetch(global.NGROK + '/userGames/' + this.state.userId)
+             .then(resp=>{
+               console.log(resp);
+               return resp.json()})
+             .then(result => {
+               let pending = result.pending;
+               let active = result.active;
+               let complete = result.ended;
+               let requests = result.invitedTo;
+               Promise.all([
+               Promise.all(pending.map(pen => (fetch(global.NGROK + '/games/'+ pen).then(resp => (resp.json()))))),
+               Promise.all(active.map(act => (fetch(global.NGROK + '/games/'+ act).then(resp => (resp.json()))))),
+               Promise.all(complete.map(comp => (fetch(global.NGROK + '/games/'+ comp).then(resp => (resp.json()))))),
+               Promise.all(requests.map(req => (fetch(global.NGROK + '/games/'+ req).then(resp => (resp.json())))))])
+               .then(final => {
+ console.log("Final", final[3]);
+                let requestsPresent = true;
+                if (final[3].length === 0){
+                  requestsPresent = false
+                  console.log("Phone", requestsPresent);
+                }
+                 this.setState({
+                 pending: this.state.ds(final[0]),
+                 active: this.state.ds(final[1]),
+                 complete: this.state.ds(final[2]),
+                 requests: this.state.ds(final[3]),
+                 requestsPresent: requestsPresent
+               })})
+             })})
+    .catch(err=> {console.log('ERROR TEST__________________', err);})
   }
 
   pending(id){
@@ -50,11 +73,6 @@ export default class Home extends React.Component {
   active(id){
     this.props.navigation.navigate('CurrentGame', {id: id})
   }
-
-  launchGame(id){
-    alert('You are going to launch ' + id + '. Get ready to run')
-  }
-
 
   accept(id){
     alert("You've Accepted" + id)

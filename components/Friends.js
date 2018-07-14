@@ -4,7 +4,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ListView
+  ListView,
+  AsyncStorage
 } from 'react-native';
 import mainStyles from '../styles.js'
 
@@ -14,10 +15,11 @@ export default class Friends extends React.Component {
     super()
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = ({
-      dataSource: ds.cloneWithRows([{username:'Tom'}, {username:'Tom'}, {username:'Tom'}, {username:'Tom'}, {username:'Tom'},
-      {username:'Tom'},{username:'Tom'}, {username:'Tom'}, {username:'Tom'},{username:'Tom'},{username:'Tom'}, {username:'Tom'}, {username:'Tom'}]),
-      requests: ds.cloneWithRows([{username:'Tim', _id: 1}, {username:'Tim', _id: 1}, {username:'Tim', _id: 1}]),
-      requestsPresent: true
+      dataSource: ds.cloneWithRows([]),
+      requests: ds.cloneWithRows([]),
+      requestsPresent: true,
+      ds: ds,
+      userId: ''
     })
   }
   static navigationOptions = {
@@ -25,7 +27,28 @@ export default class Friends extends React.Component {
   };
 
   componentDidMount(){
+    AsyncStorage.getItem('token').then((data) => {
+     token = JSON.parse(data);
+     let userId = token.userId
+     this.setState({
+       userId: userId
+     })
+   }).then(()=>{fetch(global.NGROK + '/friends/' + userId)
+            .then(resp => (resp.json()))
+            .then(obj => {
+              let requests = obj.requests;
+              let friends = obj.friends;
 
+              Promise.all([
+                Promise.all(requests.map(req => (fetch(global.URL + '/users/'+ req).then(resp => (resp.json()))))),
+                Promise.all(friends.map(friendName => (fetch(global.URL + 'users/'+ friendName).then(resp => (resp.json())))))
+              ])
+              .then(final => this.setState({
+                requests: this.state.ds(final[0]),
+                friends: this.state.ds(final[1])
+              }))
+            })})
+            .catch(err=> {console.log('ERROR', err);})
   }
 
   addFriend(){

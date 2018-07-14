@@ -17,10 +17,20 @@ export default class Login extends React.Component {
     headerLeft: null
   };
 
+  componentDidMount(){
+    AsyncStorage.getItem('token').then((result) => {
+      return JSON.parse(result)})
+    .then((value) => {
+      if(value.userId){
+        this.props.navigation.navigate('Home')
+      }
+    })
+  }
+
   login () {
     if (this.state.username && this.state.password) {
-      fetch(global.NGROK+ '/login', {
-        method: 'POST',
+      fetch(global.NGROK + '/login', {
+        method: 'post',
         headers: {
           "Content-Type": "application/json"
         },
@@ -29,15 +39,15 @@ export default class Login extends React.Component {
           password: this.state.password,
         })
       })
-      .then(resp => {
-        if (resp.status === 200) {
-          console.log('logged in! resp', resp);
+      .then(resp => (resp.json()))
+      .then((result) => {
+        if (result.status === 200) {
           AsyncStorage.setItem('token', JSON.stringify({
-            userId: resp.user.id
+            userId: result.user._id
           }))
-          this.props.navigation.navigate('Home');
+          .then(this.props.navigation.navigate('Home'));
         } else {
-          console.log("error!:", resp);
+          console.log("error!:", result);
           this.setState({message: 'Server error. Retry'})
         }
       })

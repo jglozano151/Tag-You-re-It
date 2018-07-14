@@ -1,16 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Button , AsyncStorage} from 'react-native';
 import mainStyles from '../../styles.js';
 
 
 export default class AboutGame extends React.Component {
-  static navigationOptions = ({navigation}) => (
-    {
-      title: 'Create New Game',
-      headerLeft: <Button title='Back' onPress={ () => {navigation.state.params.onLeftPress()} } />
-    }
-  );ˀ
-
   constructor() {
     super();
     this.state = {
@@ -20,6 +13,26 @@ export default class AboutGame extends React.Component {
     }
   }
 
+  static navigationOptions = ({navigation}) => (
+    {
+      title: 'Create New Game',
+      headerLeft: <Button title='Back' onPress={ () => {navigation.state.params.onLeftPress()} } />
+    }
+  );
+
+
+  componentDidMount(){
+    console.log("TEST");
+    AsyncStorage.getItem('token').then((data) => {
+     token = JSON.parse(data);
+     let userId = token.userId
+     console.log('USer', userId);
+     this.setState({
+       userId: userId
+     })
+   })
+   .catch(err => {console.log('Error', err);})
+  }
 
   back = () => {
     this.props.navigation.navigate('Home');
@@ -27,7 +40,7 @@ export default class AboutGame extends React.Component {
 
   submit() {
     if (this.state.title) {
-      fetch('localhost:1337/games/creategame/' + this.state.userId, {
+      fetch(global.NGROK +'/games/creategame/' + this.state.userId, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"
@@ -36,11 +49,12 @@ export default class AboutGame extends React.Component {
           title: this.state.title
         })
       })
-      .then((resp) => {
-        
-        if (resp.status === 200) {
-          console.log("success", resp.game);
-          let gameId = resp.game.id;
+      .then((resp) => (resp.json()))
+      .then((result) => {
+
+        if (result.status === 200) {
+          console.log("success", result);
+          let gameId = result.game._id;
           console.log("gameId", gameId);
           this.props.navigation.navigate('InvitePlayers', {
             gameId: gameId
@@ -48,7 +62,7 @@ export default class AboutGame extends React.Component {
 
         } else {
           this.setState({
-            message: resp.message
+            message: result.message
           })
         }
       })
@@ -77,9 +91,9 @@ export default class AboutGame extends React.Component {
         userId: userId
       })
     })
-    
+
   }
-  
+
   render() {
     return (
       <View style={mainStyles.container}>

@@ -1,10 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image, AsyncStorage } from 'react-native';
 import {
   MapView
 } from 'expo';
 import mainStyles from '../styles.js'
-
 
 export default class CurrentGame extends React.Component {
   constructor(props){
@@ -20,9 +19,10 @@ export default class CurrentGame extends React.Component {
         latDelta:.0125,
         longDelta:.007
       },
-      its: [{user: 'Tom', lat: 37.773, long: -122.4073}, {user: 'Tom2', lat: 37.777, long: -122.4077}],
-      players: [{user: 'Tim', lat: 37.771, long: -122.4071}, {user: 'Tam', lat: 37.774, long: -122.4078}, {user: 'Tum', lat: 37.778, long: -122.4073}],
-      tagged: true
+      its: [],
+      players: [],
+      tagged: false,
+      currentGame: {}
     })
   }
   static navigationOptions = {
@@ -32,30 +32,55 @@ export default class CurrentGame extends React.Component {
 
 
   componentDidMount(){
-    navigator.geolocation.getCurrentPosition(
-      (success)=>{
-        this.setState({
-          lat:success.coords.latitude,
-          long:success.coords.longitude,
-          latDelta:.0125,
-          longDelta:.007
-      })},
-      (error)=>{},
-      {});
-    this.watchId = setInterval(()=>{navigator.geolocation.getCurrentPosition(
-      (success)=>{
-        this.setState({
-          userLoc: {
-            lat:success.coords.latitude,
-            long:success.coords.longitude
-          }
-      })},
-      (error)=>{},
-      {})}, 3000)
+    this.here();
+    this.updateLocation();
+    this.watchId = setInterval(()=>this.updateLocation(), 3000)
+    AsyncStorage.getItem('token')
+    .then((data) => {
+      token = JSON.parse(data);
+      let userId = token.userId
+      this.setState({
+        userId: userId
+      })
+    })
+    .catch(err=> {console.log('ERROR', err)})
   }
 
   componentWillUnmount() {
     clearInterval(this.watchId);
+  }
+
+  updateLocation(){
+    navigator.geolocation.getCurrentPosition(
+      (success)=>{
+        fetch(global.NGROK + '/livegame/' + navigation.getParam('id'), {
+          method: 'post',
+          body: JSON.stringify({
+            latitude: success.coords.latitude,
+            longitude: success.coords.longitude,
+            id: this.state.userId
+          })
+        })
+        .then(resp=>(resp.json()))
+        .then((result)=> {
+          let tagged = false;
+          result.itPlayers.forEach((element) => {
+            if (element.id === this.state.userId)
+              tagged = true;
+            return;
+          })
+          this.setState({
+            its:results.itPlayers,
+            players: results.notItPlayers,
+            tagged: tagged,
+            userLoc: {
+              lat:success.coords.latitude,
+              long:success.coords.longitude
+            }
+          })
+      })},
+      (error)=>{},
+      {})
   }
 
   here(){

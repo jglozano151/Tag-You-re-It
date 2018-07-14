@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Button, ListView} from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Button, ListView, AsyncStorage} from 'react-native';
 import mainStyles from '../../styles.js'
 
 
@@ -18,33 +18,40 @@ export default class InvitePlayers extends React.Component {
       message: '',
       friends: [],
       selected: [],
-      gameId: ''
+      gameId: '',
+      userId: ''
     }
   }
 
   componentDidMount () {
 
     let gameId = this.props.navigation.getParam('gameId');
-    console.log("gameId", gameId);
-    this.setState({
-      gameId: gameId
+    AsyncStorage.getItem('token')
+    .then((data) => {
+      token = JSON.parse(data);
+      let userId = token.userId
+      this.setState({
+        userId: userId,
+        gameId: gameId
+      })
     })
-
-    fetch('localhost:1337/friends/' + this.state.userId)
-    .then((resp) => {
-      if (resp.status === 200) {
-        console.log("success", resp);
+    .then(()=>{
+    fetch(global.NGROK + '/friends/' + this.state.userId)
+    .then((resp) => (resp.json())
+    .then((result)=> {
+      if (result.status === 200) {
+        console.log("success", result);
         this.setState({
-          friends: resp.friends
+          friends: result.friends
         })
       } else {
-        console.log("error!:", resp.message);
+        console.log("error!:", result.message);
         this.setState({message: 'Server error. Retry'})
       }
     })
+    )})
     .catch((err) => {
       console.log("error:", err);
-      this.setState({message: 'Server error'})
     })
   }
 
@@ -90,7 +97,7 @@ export default class InvitePlayers extends React.Component {
     console.log("invite selected Array:", this.state.selected);
     // must invite at least 2 people
     if (this.state.selected.length >= 2) {
-      fetch('localhost:1337/games/inviteplayers', {
+      fetch(global.NGROK + '/games/inviteplayers', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"
@@ -100,10 +107,10 @@ export default class InvitePlayers extends React.Component {
           players: selected
         })
       })
-      .then((resp) => {     
+      .then((resp) => {
         if (resp.status === 200) {
           console.log("success:", resp);
-          this.props.navigation.navigate('Pending');    
+          this.props.navigation.navigate('Pending');
         } else {
           this.setState({
             message: resp.message
@@ -128,17 +135,17 @@ export default class InvitePlayers extends React.Component {
 
     return (
       <View style={{flex: 1, backgroundColor: '#fff'}}>
-        
+
         <Text style={mainStyles.textAlert}>{this.state.message}</Text>
 
         <Text style={mainStyles.textMed}>Click on names of friends you wish to invite</Text>
 
-        
+
         <View style = {{flex: 7}}>
           <ListView
             dataSource={ds.cloneWithRows(this.state.friends)}
             renderRow={this._renderRow}
-          />    
+          />
 
         </View>
 
