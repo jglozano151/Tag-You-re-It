@@ -1,3 +1,4 @@
+// Require node modules
 const express = require('express');
 const bodyParser = require('body-parser')
 const path = require('path');
@@ -6,6 +7,7 @@ const mongoose = require('mongoose');
 
 mongoose.connect(process.env.MLAB);
 
+// Database schema
 const User = mongoose.model('User', {
   username: String,
   password: String,
@@ -159,6 +161,27 @@ app.post('/games/creategame/:user', function(req, res) {
 app.get('/games/initialize/:game', function(req, res) {
   Game.findByIdAndUpdate(req.params.id, {gameStatus: 'active'})
     .then(res.send('Game started!'))
+})
+
+// Turns the user's game status from pending to active. Takes 'game' query that
+// refers to the game that is being initialized
+app.get('/games/initializeuser/:user', function(req, res) {
+  User.findById(req.params.user)
+    .then((user) => {
+      let activeGames = user.games.active;
+      let pendingGames = user.games.pending;
+      activeGames.push(req.query.game);
+      pendingGames.splice(pendingGames.indexOf(req.query.game), 1)
+      User.findByIdAndUpdate(req.params.user, {
+        games: {
+          active: activeGames,
+          pending: pendingGames,
+          invitedTo: user.games.invitedTo,
+          ended: user.games.ended
+        }
+      })
+        .then(res.send('Players are ready...'))
+    })
 })
 
 // Adds the game to selected player's invited to field. Requires a 'user' query
