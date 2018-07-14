@@ -51,9 +51,14 @@ export default class CurrentGame extends React.Component {
   }
 
   updateLocation(){
+    console.log("test");
     navigator.geolocation.getCurrentPosition(
       (success)=>{
-        fetch(global.NGROK + '/livegame/' + navigation.getParam('id'), {
+        console.log("test2");
+        console.log('WTF');
+        console.log("BLANK", this.props.navigation.getParam('id'))
+        console.log('WTF2')
+        fetch(global.NGROK + '/livegame/' + this.props.navigation.getParam('id'), {
           method: 'post',
           body: JSON.stringify({
             latitude: success.coords.latitude,
@@ -131,16 +136,16 @@ export default class CurrentGame extends React.Component {
             {this.state.its.map((it)=> <MapView.Marker
               key = {it.user}
               coordinate={{
-                latitude: it.lat,
-                longitude: it.long
+                latitude: it.location.latitude,
+                longitude: it.location.longitude
               }}
               title={it.user}
               />)}
               {this.state.players.map((player)=> <MapView.Marker
                 key = {player.user}
                 coordinate={{
-                  latitude: player.lat,
-                  longitude: player.long
+                  latitude: player.location.latitude,
+                  longitude: player.location.longitude
                 }}
                 title={player.user}
                 pinColor ={'black'}
@@ -150,9 +155,9 @@ export default class CurrentGame extends React.Component {
           <View style={{flex: 1, flexDirection: 'row'}}>
               {(this.state.tagged)?
                 <Text style = {[{flex: 3}, mainStyles.button, mainStyles.blue, mainStyles.buttonLabel, mainStyles.textMed]}>
-                Go Get {this.state.players[0].user}!</Text>:
+                Go Get {this.state.players[0]}!</Text>:
                 <Text style = {[{flex: 3}, mainStyles.button, mainStyles.blue, mainStyles.buttonLabel, mainStyles.textMed]}>
-                Watch Out For {this.state.its[0].user}!
+                Watch Out For {this.state.its[0]}!
               </Text>}
             <TouchableOpacity
               onPress={()=>{this.here()}}

@@ -348,6 +348,8 @@ function distance(lat1, lon1, lat2, lon2, unit) {
 }
 
 app.post('/livegame/:game', function(req, res){
+  console.log("TEST6");
+
   User.findByIdAndUpdate(req.body.id, {
     location: {
       latitude: req.body.latitude,
@@ -356,6 +358,8 @@ app.post('/livegame/:game', function(req, res){
   })
     .then(Game.findById(req.params.game))
     .then((game) => {
+      console.log("TEST5");
+
       let playerIds = game.participants.joined
       let itIds = game.it
       Promise.all(
@@ -364,6 +368,8 @@ app.post('/livegame/:game', function(req, res){
         })
       )
         .then((players) => {
+          console.log("TEST3");
+
           let itPlayers = []
           let notItPlayers = []
           let updatedNotItPlayers = []
@@ -382,6 +388,8 @@ app.post('/livegame/:game', function(req, res){
               }
             }
           }
+          console.log("TEST4");
+
           notItPlayers.forEach(function(element){
             let match = false
             for (let i = 0; i < itPlayers.length; i++){
@@ -396,6 +404,7 @@ app.post('/livegame/:game', function(req, res){
           })
           Game.findByIdAndUpdate(req.params.game, {it: itIds})
             .then(() => {
+              console.log("TEST");
               res.json({status: 200, message: 'Updated', itPlayers: itPlayers, notItPlayers: updatedNotItPlayers})
             })
             .catch((err) => res.json({status: 400, message: err}))
