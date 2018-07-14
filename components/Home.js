@@ -6,9 +6,7 @@ import {
   View
 } from 'react-native';
 import mainStyles from '../styles.js'
-import Games from './Games'
-import Friends from './Friends'
-import AboutGame from './NewGame/AboutGame'
+
 
 
 

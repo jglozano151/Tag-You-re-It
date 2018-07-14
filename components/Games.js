@@ -7,13 +7,11 @@ import {
   ListView
 } from 'react-native';
 import mainStyles from '../styles.js'
-// import Penzzz
 
 
 export default class Home extends React.Component {
   constructor(){
     super()
-    // title, participants, createdAt, owner, gameStatus-pending,  active, complete
     let ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
     this.state = ({
       requestsPresent: true,

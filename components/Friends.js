@@ -7,7 +7,6 @@ import {
   ListView
 } from 'react-native';
 import mainStyles from '../styles.js'
-import InviteFriend from './InviteFriend'
 
 
 export default class Friends extends React.Component {
